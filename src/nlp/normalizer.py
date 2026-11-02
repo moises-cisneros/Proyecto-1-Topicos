@@ -112,29 +112,29 @@ def normalize_text(text: str, keep_accents: bool = True) -> str:
     # 1. Enmascarar entidades críticas
     masked = mask_entities(text)
 
-    # 2. Proteger tokens sintéticos antes de aplicar minúsculas y filtrado de puntuación
-    protected = masked.replace(TOKEN_URL, " __TOKEN_URL__ ")
-    protected = protected.replace(TOKEN_TEL, " __TOKEN_TEL__ ")
-    protected = protected.replace(TOKEN_NUM, " __TOKEN_NUM__ ")
+    # 2. Proteger tokens sintéticos con sentinelas internos seguros
+    protected = masked.replace(TOKEN_URL, " \x00TOKENURL\x00 ")
+    protected = protected.replace(TOKEN_TEL, " \x00TOKENTEL\x00 ")
+    protected = protected.replace(TOKEN_NUM, " \x00TOKENNUM\x00 ")
 
     # 3. Conversión a minúsculas para el contenido léxico
     lowered = protected.lower()
 
     # 4. Limpieza de puntuación y símbolos ruidosos
     if keep_accents:
-        # Permitir caracteres alfabéticos en español, dígitos residuales, guiones bajos para tokens y espacios
-        cleaned = re.sub(r"[^a-záéíóúüñ_0-9\s]", " ", lowered)
+        # Permitir caracteres alfabéticos en español, dígitos residuales, sentinelas y espacios
+        cleaned = re.sub(r"[^a-záéíóúüñ0-9\s\x00]", " ", lowered)
     else:
         # Opcional: remover tildes si el vectorizador o configuración lo requiere
         import unicodedata
         nfkd = unicodedata.normalize("NFKD", lowered)
         stripped = "".join(c for c in nfkd if not unicodedata.combining(c) or c in ("\u0303",))  # preservar eñe si posible
-        cleaned = re.sub(r"[^a-zñ_0-9\s]", " ", stripped)
+        cleaned = re.sub(r"[^a-zñ0-9\s\x00]", " ", stripped)
 
     # 5. Restaurar tokens sintéticos canónicos en mayúsculas
-    restored = cleaned.replace("__token_url__", TOKEN_URL)
-    restored = restored.replace("__token_tel__", TOKEN_TEL)
-    restored = restored.replace("__token_num__", TOKEN_NUM)
+    restored = cleaned.replace("\x00tokenurl\x00", TOKEN_URL)
+    restored = restored.replace("\x00tokentel\x00", TOKEN_TEL)
+    restored = restored.replace("\x00tokennum\x00", TOKEN_NUM)
 
     # 6. Colapsar espacios múltiples y recortar extremos
     normalized = re.sub(r"\s+", " ", restored).strip()
