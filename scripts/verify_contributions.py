@@ -56,7 +56,7 @@ def main():
         raw_hash = cols[0].replace("`", "").strip()
         rama = cols[1] if len(cols) > 1 else ""
         desc = cols[3] if len(cols) > 3 else ""
-        decision_col = cols[4] if len(cols) > 4 else ""
+        decision_col = cols[-1] if cols else ""
 
         # Comprobar si es un commit de main (Fase 0) ya registrado
         if "main" in rama:

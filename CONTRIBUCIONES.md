@@ -12,7 +12,7 @@ Este registro documenta la autoría y el dominio técnico en cada una de las cap
 
 | Capa Técnica | Módulo / Directorio | Estado | Commits Clave |
 | :--- | :--- | :---: | :--- |
-| **Capa 1: Datos & EDA** | `data/`, `notebooks/01_eda.ipynb` | Planificado | - |
+| **Capa 1: Datos & EDA** | `data/`, `notebooks/01_eda.ipynb` | Implementado | `67836de`, `02a30da`, `9263b5e`, `2aa0ed2` |
 | **Capa 2: Pipeline de NLP** | `src/nlp/` (normalizer, stopwords, pipeline) | Planificado | - |
 | **Capa 3: Modelado & ML** | `src/models/` (train, evaluate, .joblib) | Planificado | - |
 | **Capa 4: Backend REST API** | `api/` (FastAPI, PostgreSQL, schemas) | Planificado | - |
@@ -43,7 +43,10 @@ Registro de funcionalidades desarrolladas mediante ramas de trabajo (`feat/*`) e
 
 | Hash | Rama / PR | Issue Vinculada | Tipo & Módulo | Descripción Técnica del Cambio | Decisión de Diseño & Alternativa Descartada |
 | :--- | :--- | :---: | :--- | :--- | :--- |
-| *[Hash]* | `feat/hu01-data-eda` | #1 | `feat(data)` | Descarga, partición estratificada 80/20 y notebook EDA. | **Decisión:** Mantener split estratificado fijo con semilla 42. **Alternativa descartada:** Split aleatorio no reproducible que contamina el test set. |
+| `67836de` | `feat/hu01-data-eda` | #1 | `feat(data)` | Descargar y estructurar dataset de SMS en español (5.572 muestras, 0 nulos). | **Decisión:** Utilizar corpus de dbarbedillo con columna text_es por contener el balance auténtico de spam y 0 nulos. **Alternativa descartada:** Gabrielaz/spamspa que requiere tokens LFS y falla en descarga anónima. |
+| `02a30da` | `feat/hu01-data-eda` | #1 | `feat(data)` | Partición estratificada 80/20 reproducible con semilla fija 42 (`train.csv` y `test.csv`). | **Decisión:** Mantener split estratificado fijo con semilla 42 y congelar holdout test set. **Alternativa descartada:** Split aleatorio no reproducible que contamina el test set. |
+| `9263b5e` | `feat/hu01-data-eda` | #1 | `docs(eda)` | Notebook interactivo `01_eda.ipynb` con análisis de clases, longitudes y vocabulario. | **Decisión:** Visualizar distribuciones KDE, boxplots y correlación de entidades (URLs/números) para justificar tokens sintéticos. **Alternativa descartada:** Entrenar modelos sin análisis exploratorio previo. |
+| `2aa0ed2` | `feat/hu01-data-eda` | #1 | `test(data)` | Suite de pruebas de integridad de datos, ausencia de nulos y ratio 80/20 en pytest. | **Decisión:** Automatizar verificación de esquemas y proporciones estratificadas para CI. **Alternativa descartada:** Verificación manual de archivos CSV. |
 | *[Hash]* | `feat/hu02-nlp-pipeline` | #2 | `feat(nlp)` | Implementar regex para enmascarar URLs y teléfonos con `TOKEN_URL` y `TOKEN_TEL`. | **Decisión:** Enmascarar con tokens sintácticos para preservar la señal semántica. **Alternativa descartada:** Borrar puntuación/URLs por completo, lo que destruiría el predictor principal de phishing. |
 | *[Hash]* | `feat/hu02-nlp-pipeline` | #2 | `feat(nlp)` | Whitelist de términos de urgencia en lista de stop words en español. | **Decisión:** Preservar "urgente", "bloqueada", "ya" y negaciones. **Alternativa descartada:** Aplicar stop words crudas de NLTK que eliminan la urgencia del fraude. |
 | *[Hash]* | `feat/hu03-model-training` | #3 | `feat(nlp)` | Benchmark experimental de Stemming vs. Lematización y N-gramas (1,1 vs 1,2). | **Decisión:** Evaluar métricas y latencia de inferencia empíricamente en notebook 02. **Alternativa descartada:** Elegir arbitrariamente sin evidencia cuantitativa. |
