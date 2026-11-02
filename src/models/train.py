@@ -123,6 +123,7 @@ def train_and_evaluate(
     test_path: str = "data/processed/test.csv",
     cv_folds: int = 5,
     random_state: int = 42,
+    skip_tuning: bool = False,
 ) -> dict[str, Any]:
     """Pipeline completo de entrenamiento, evaluación comparativa y serialización."""
     start_time = time.time()
@@ -139,8 +140,19 @@ def train_and_evaluate(
     print(f"    Distribución Train: ham={sum(y_train == 'ham')}, spam={sum(y_train == 'spam')}")
     print(f"    Distribución Test:  ham={sum(y_test == 'ham')}, spam={sum(y_test == 'spam')}")
 
-    # 2. Sintonía de hiperparámetros con 5-Fold Stratified CV
-    tuning = tune_hyperparameters(X_train, y_train, cv_folds=cv_folds, random_state=random_state)
+    # 2. Sintonía de hiperparámetros (o modo rápido para ensayos de reconfiguración)
+    if skip_tuning:
+        print("[*] Modo Rápido / Sensibilidad activado: utilizando hiperparámetros óptimos validados (alpha=0.1, C=50.0).")
+        tuning = {
+            "best_nb_alpha": 0.1,
+            "best_nb_f1": 0.9614,
+            "nb_cv_grid": {"fast_mode": True},
+            "best_lr_c": 50.0,
+            "best_lr_f1": 0.9634,
+            "lr_cv_grid": {"fast_mode": True},
+        }
+    else:
+        tuning = tune_hyperparameters(X_train, y_train, cv_folds=cv_folds, random_state=random_state)
     best_alpha = tuning["best_nb_alpha"]
     best_c = tuning["best_lr_c"]
 
@@ -203,15 +215,21 @@ def train_and_evaluate(
         print(f"      FN #{i}: \"{fn['text'][:60]}...\" -> Causa: {fn['diagnosis']}")
 
     # 7. Serialización de artefactos
-    model_out = _PROJECT_ROOT / output_model_path
-    metrics_out = _PROJECT_ROOT / output_metrics_path
+    model_p = Path(output_model_path)
+    metrics_p = Path(output_metrics_path)
+    model_out = model_p if model_p.is_absolute() else _PROJECT_ROOT / model_p
+    metrics_out = metrics_p if metrics_p.is_absolute() else _PROJECT_ROOT / metrics_p
 
     model_out.parent.mkdir(parents=True, exist_ok=True)
     metrics_out.parent.mkdir(parents=True, exist_ok=True)
 
     # Serializar pipeline en .joblib
     joblib.dump(winner_pipeline, model_out)
-    print(f"\n[+] Pipeline serializado atómicamente a: {model_out.relative_to(_PROJECT_ROOT)}")
+    try:
+        model_display = model_out.relative_to(_PROJECT_ROOT)
+    except ValueError:
+        model_display = model_out
+    print(f"\n[+] Pipeline serializado atómicamente a: {model_display}")
 
     # Guardar métricas completas en metrics.json
     metrics_payload = {
@@ -232,7 +250,11 @@ def train_and_evaluate(
 
     with open(metrics_out, "w", encoding="utf-8") as f:
         json.dump(metrics_payload, f, indent=2, ensure_ascii=False)
-    print(f"[+] Métricas de evaluación exportadas a: {metrics_out.relative_to(_PROJECT_ROOT)}")
+    try:
+        metrics_display = metrics_out.relative_to(_PROJECT_ROOT)
+    except ValueError:
+        metrics_display = metrics_out
+    print(f"[+] Métricas de evaluación exportadas a: {metrics_display}")
 
     print(f"\n[OK] Pipeline entrenado, validado y serializado exitosamente en {metrics_payload['total_execution_time_seconds']}s.")
     return metrics_payload
@@ -242,7 +264,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Entrenamiento y serialización de modelos para SMS Sentinel")
     parser.add_argument("--cv", type=int, default=5, help="Particiones de validación cruzada estratificada (default: 5)")
     parser.add_argument("--seed", type=int, default=42, help="Semilla aleatoria (default: 42)")
+    parser.add_argument("--fast", action="store_true", help="Modo rápido para ensayos de reconfiguración y sensibilidad en vivo (< 5 segundos)")
     args = parser.parse_args()
 
-    train_and_evaluate(cv_folds=args.cv, random_state=args.seed)
+    train_and_evaluate(cv_folds=args.cv, random_state=args.seed, skip_tuning=args.fast)
 

@@ -170,50 +170,88 @@ SMS-Sentinel/
 
 ## 7. Puesta en Marcha (Quickstart)
 
+### Configuración de Variables de Entorno
+
+Copiar la plantilla de configuración predeterminada con los puertos aislados:
+
+```bash
+cp .env.example .env
+```
+
+| Servicio | Puerto Host (Aislado) | Puerto Interno Contenedor | Descripción |
+| :--- | :---: | :---: | :--- |
+| **Frontend Web (React/Vite)** | `3090` | `80` | Interfaz gráfica con visor de NLP y telemetría de riesgo. |
+| **Backend REST API (FastAPI)** | `8090` | `8000` | Inferencia de SMS, endpoints `/predict`, `/nlp/debug`, Swagger UI. |
+| **PostgreSQL** | `5439` | `5432` | Base de datos relacional para auditoría forense inmutable. |
+
+---
+
 ### Opción A: Despliegue con Docker Compose (Recomendado)
 
-Inicia todos los servicios con puertos mapeados y aislados:
+Inicia todos los servicios con puertos mapeados, redes puente y healthchecks automatizados con un único comando:
 
 ```bash
-docker compose up --build
+# Iniciar servicios en segundo plano con reconstrucción
+pnpm docker:up
+# o directamente con Docker Compose:
+docker compose up --build -d
 ```
 
-- **Frontend Web:** [http://localhost:3090](http://localhost:3090)
-- **API Swagger UI:** [http://localhost:8090/docs](http://localhost:8090/docs)
-- **PostgreSQL:** `localhost:5439`
+- **Frontend Web UI:** [http://localhost:3090](http://localhost:3090)
+- **API Swagger / OpenAPI:** [http://localhost:8090/docs](http://localhost:8090/docs)
+- **Diagnóstico de Salud (/health):** [http://localhost:8090/health](http://localhost:8090/health)
+- **Base de Datos PostgreSQL:** `localhost:5439`
 
-### Opción B: Ejecución Local para Desarrollo
-
-#### 1. Entorno Backend y Machine Learning
+Para consultar los logs o detener la infraestructura:
 
 ```bash
-# Crear entorno virtual
-python -m venv .venv
-
-# Activar entorno (Windows PowerShell)
-.venv\Scripts\Activate.ps1
-
-# Instalar dependencias
-pip install -r api/requirements.txt
-
-# Descargar recursos de NLP
-python -m spacy download es_core_news_sm
-python -c "import nltk; nltk.download('stopwords'); nltk.download('punkt')"
-
-# Entrenar pipeline completo
-python src/models/train.py
-
-# Iniciar servidor FastAPI
-uvicorn api.main:app --host 0.0.0.0 --port 8090 --reload
+pnpm docker:logs     # Ver logs en vivo
+pnpm docker:down     # Detener y remover contenedores
 ```
 
-#### 2. Entorno Frontend
+---
+
+### Opción B: Ejecución Local Monorepo (pnpm + Python)
+
+Gracias a la centralización de scripts en el `package.json` raíz y el espacio de trabajo pnpm:
 
 ```bash
-cd web
+# 1. Instalar dependencias web desde la raíz
 pnpm install
-pnpm dev --port 3090
+
+# 2. Iniciar el frontend en desarrollo (puerto 3090)
+pnpm dev
+
+# 3. Iniciar el backend FastAPI en desarrollo (puerto 8090)
+pnpm api:dev
+
+# 4. Reentrenar el modelo de Machine Learning
+pnpm ml:train        # Entrenamiento completo con 5-Fold Stratified CV
+pnpm ml:train:fast   # Reentrenamiento rápido (< 50 segundos) para ensayos de sensibilidad
+
+# 5. Ejecutar la suite completa de pruebas automatizadas
+pnpm test
 ```
+
+---
+
+### 8. Ensayos de Reconfiguración y Sensibilidad de Parámetros en Vivo
+
+La arquitectura modular permite modificar parámetros del pipeline y verificar el cambio en inferencia en menos de 2 minutos sin romper contratos de API:
+
+1. **Ajuste Léxico de Stop Words:**
+   - Modificar o incorporar términos en `src/nlp/stopwords_es.py`.
+   - Ejecutar `pnpm ml:train:fast`.
+   - El artefacto `.joblib` se actualiza de forma atómica y `/nlp/debug` refleja la nueva segmentación en tiempo real.
+2. **Modificación de N-Gramas:**
+   - Alternar entre unigramas `(1, 1)` y bigramas `(1, 2)` en `src/nlp/pipeline_builder.py` para analizar la variación de dimensionalidad del vocabulario TF-IDF.
+3. **Calibración de Umbrales de Riesgo:**
+   - Ajustar los umbrales de decisión (`0.35` y `0.50`) en `api/main.py` para adaptar la sensibilidad del semáforo de riesgo ante escenarios de alta sospecha.
+4. **Verificación Automatizada de Sensibilidad:**
+   - Ejecutar la suite dedicada:
+     ```bash
+     pytest tests/test_live_reconfiguration.py -v
+     ```
 
 ---
 

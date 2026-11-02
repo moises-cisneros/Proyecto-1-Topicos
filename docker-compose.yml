@@ -1,0 +1,80 @@
+services:
+  # Base de Datos Relacional PostgreSQL para Auditoría Inmutable
+  db:
+    image: postgres:15-alpine
+    container_name: sms_sentinel_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-sms_sentinel_db}
+    ports:
+      # Puerto no estándar 5439 para evitar colisiones con instancias locales de PostgreSQL (5432)
+      - "${DB_PORT:-5439}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-sms_sentinel_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - sms_network
+
+  # Microservicio REST API con FastAPI e Inferencia NLP
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: sms_sentinel_api
+    restart: unless-stopped
+    environment:
+      PORT: 8000
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-sms_sentinel_db}
+      DB_POOL_SIZE: 10
+      DB_MAX_OVERFLOW: 20
+      DB_POOL_RECYCLE: 300
+      DB_POOL_TIMEOUT: 2.0
+    ports:
+      # Puerto no estándar 8090 para el microservicio REST API
+      - "${API_PORT:-8090}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - sms_network
+
+  # Aplicación Web React con Visor de NLP y Métricas de Clasificación
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8090}
+    container_name: sms_sentinel_web
+    restart: unless-stopped
+    ports:
+      # Puerto no estándar 3090 para el servidor web Nginx
+      - "${WEB_PORT:-3090}:80"
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+      - sms_network
+
+networks:
+  sms_network:
+    name: sms_sentinel_network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: sms_sentinel_postgres_data
+    driver: local
