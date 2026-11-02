@@ -8,6 +8,11 @@ from src.nlp.normalizer import (
     mask_entities,
     normalize_text,
 )
+from src.nlp.pipeline_builder import (
+    build_sms_pipeline,
+    inspect_pipeline_prediction,
+    preprocess_for_pipeline,
+)
 from src.nlp.stopwords_es import (
     DEFAULT_WHITELIST,
     NEGATION_WHITELIST,
@@ -38,4 +43,7 @@ __all__ = [
     "stem_tokens",
     "preprocess_text",
     "inspect_nlp_pipeline",
+    "preprocess_for_pipeline",
+    "build_sms_pipeline",
+    "inspect_pipeline_prediction",
 ]
