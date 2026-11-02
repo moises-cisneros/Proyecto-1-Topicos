@@ -1,0 +1,60 @@
+# Registro de Contribuciones del Proyecto (CONTRIBUCIONES.md)
+
+> **Proyecto:** SMS Sentinel (Detección de Spam y Phishing en SMS mediante NLP y Machine Learning)  
+> **Autor / Desarrollador:** Moises Cisneros  
+> **Email en Git:** `moisescisnerosdl@gmail.com`  
+
+---
+
+## 1. Resumen de Cobertura de Capas del Sistema
+
+Este registro documenta la autoría y el dominio técnico en cada una de las capas obligatorias de la arquitectura:
+
+| Capa Técnica | Módulo / Directorio | Estado | Commits Clave |
+| :--- | :--- | :---: | :--- |
+| **Capa 1: Datos & EDA** | `data/`, `notebooks/01_eda.ipynb` | Planificado | - |
+| **Capa 2: Pipeline de NLP** | `src/nlp/` (normalizer, stopwords, pipeline) | Planificado | - |
+| **Capa 3: Modelado & ML** | `src/models/` (train, evaluate, .joblib) | Planificado | - |
+| **Capa 4: Backend REST API** | `api/` (FastAPI, PostgreSQL, schemas) | Planificado | - |
+| **Capa 5: Frontend UI & Explicabilidad** | `web/` (React, visor NLP, métricas) | Planificado | - |
+| **Capa 6: DevOps, Testing & CI/CD** | `.github/` | Implementado | Configuración base y CI inicial |
+
+---
+
+## 2. Registro Granular de Commits
+
+### 2.1 Fase 0: Configuración Base, Gobernanza y Herramientas de Calidad
+
+Commits fundacionales en la rama `main` para establecer las bases de arquitectura, calidad de código y canal de integración continua:
+
+| Hash | Rama | Tipo & Módulo | Descripción Técnica del Cambio | Decisión de Diseño & Alternativa Descartada |
+| :--- | :---: | :--- | :--- | :--- |
+| `c5145fb` | `main` | `chore` | Inicializar repositorio con `.gitignore`, licencia MIT, git hooks locales y herramientas de verificación. | **Decisión:** Configurar ignores estrictos, pre-commit checks y aislar dependencias transitorias. **Alternativa descartada:** Subir binarios, entornos `.env` o archivos de borradores al repositorio. |
+| `b9c7806` | `main` | `docs` | Establecer arquitectura limpia hexagonal, especificación de diseño UI, mockups interactivos y normas de contribución. | **Decisión:** Documentar aislamiento de puertos (`3090`, `8090`, `5439`) y matriz semántica de diseño. **Alternativa descartada:** Codificar sin especificación formal. |
+| `b207cc6` | `main` | `ci` | Configurar canal de integración continua en GitHub Actions, plantillas de issues/PRs y skills técnicas de verificación. | **Decisión:** Pipeline automatizado que valida sintaxis Python, tests y frontend. **Alternativa descartada:** Verificación manual propensa a omisiones. |
+| `HEAD` | `main` | `docs(contribuciones)` | Inicializar registro de contribuciones del proyecto y mapa de historias de usuario. | **Decisión:** Trazabilidad commit a commit para auditoría de calidad de software. **Alternativa descartada:** Documentar contribuciones al final de memoria. |
+
+---
+
+### 2.2 Fases de Desarrollo: Historias de Usuario (HUs)
+
+Registro de funcionalidades desarrolladas mediante ramas de trabajo (`feat/*`) e integradas a `main` a través de Pull Requests:
+
+| Hash | Rama / PR | Issue Vinculada | Tipo & Módulo | Descripción Técnica del Cambio | Decisión de Diseño & Alternativa Descartada |
+| :--- | :--- | :---: | :--- | :--- | :--- |
+| *[Hash]* | `feat/hu01-data-eda` | #1 | `feat(data)` | Descarga, partición estratificada 80/20 y notebook EDA. | **Decisión:** Mantener split estratificado fijo con semilla 42. **Alternativa descartada:** Split aleatorio no reproducible que contamina el test set. |
+| *[Hash]* | `feat/hu02-nlp-pipeline` | #2 | `feat(nlp)` | Implementar regex para enmascarar URLs y teléfonos con `TOKEN_URL` y `TOKEN_TEL`. | **Decisión:** Enmascarar con tokens sintácticos para preservar la señal semántica. **Alternativa descartada:** Borrar puntuación/URLs por completo, lo que destruiría el predictor principal de phishing. |
+| *[Hash]* | `feat/hu02-nlp-pipeline` | #2 | `feat(nlp)` | Whitelist de términos de urgencia en lista de stop words en español. | **Decisión:** Preservar "urgente", "bloqueada", "ya" y negaciones. **Alternativa descartada:** Aplicar stop words crudas de NLTK que eliminan la urgencia del fraude. |
+| *[Hash]* | `feat/hu03-model-training` | #3 | `feat(nlp)` | Benchmark experimental de Stemming vs. Lematización y N-gramas (1,1 vs 1,2). | **Decisión:** Evaluar métricas y latencia de inferencia empíricamente en notebook 02. **Alternativa descartada:** Elegir arbitrariamente sin evidencia cuantitativa. |
+| *[Hash]* | `feat/hu03-model-training` | #3 | `feat(ml)` | Script de entrenamiento unificado `src/models/train.py` y serialización a `.joblib`. | **Decisión:** Empaquetar preprocesador y estimador en un solo Pipeline atómico. **Alternativa descartada:** Preprocesar texto por fuera del pipeline, arriesgando desfase en la API. |
+| *[Hash]* | `feat/hu04-api-inference` | #4 | `feat(api)` | Rutas FastAPI `/predict`, `/predict/batch`, `/nlp/debug` y `/metrics`. | **Decisión:** Exponer `/nlp/debug` para permitir explicabilidad paso a paso en el frontend. **Alternativa descartada:** Caja negra que solo devuelve 0 o 1. |
+| *[Hash]* | `feat/hu05-db-audit` | #5 | `feat(db)` | Modelo SQLAlchemy `MessageAudit` y conexión a PostgreSQL en puerto 5439. | **Decisión:** Puerto 5439 para evitar colisión con Postgres local del host. **Alternativa descartada:** Base de datos en memoria sin persistencia de auditoría. |
+| *[Hash]* | `feat/hu07-frontend-ui` | #7 | `feat(web)` | Interfaz React con formulario, semáforo de riesgo y visualizador paso a paso de NLP. | **Decisión:** Componente explicativo paso a paso. **Alternativa descartada:** Dashboard estático sin trazabilidad del preprocesamiento. |
+
+---
+
+## 3. Operatividad y Validación del Sistema
+
+* **Trazabilidad y Autoría:** El 100% de los commits pertenecen a la cuenta configurada del autor, sin cuentas compartidas ni reescrituras destructivas de historial (`no force-push`).
+* **Justificación de Modelos:** Racional teórico y matemático de selección y descarte de modelos de Machine Learning documentado en `ARCHITECTURE.md`.
+* **Pruebas de Sensibilidad y Reconfiguración:** Pipeline modularizado con script de reentrenamiento unificado (`pnpm ml:train` o `python src/models/train.py`), permitiendo modificar stopwords, n-gramas o hiperparámetros y verificar el cambio de métricas en tiempo real.
