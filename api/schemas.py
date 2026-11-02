@@ -1,7 +1,7 @@
 """Esquemas de validación y transferencia de datos (Pydantic v2) para SMS Sentinel API.
 
 Define contratos estrictos de entrada y salida para inferencia individual,
-procesamiento por lotes, métricas y estado de salud del servicio.
+procesamiento por lotes, métricas, auditoría de base de datos y estado de salud del servicio.
 """
 
 from datetime import datetime
@@ -113,6 +113,7 @@ class HealthResponse(BaseModel):
     model_name: str = Field(..., description="Nombre del modelo clasificador en producción")
     version: str = Field("1.0.0", description="Versión de la API")
     timestamp: str = Field(..., description="Marca de tiempo ISO-8601 del servidor")
+    database_connected: bool = Field(False, description="Indica si la base de datos de auditoría está conectada")
 
 
 class MetricsResponse(BaseModel):
@@ -122,3 +123,28 @@ class MetricsResponse(BaseModel):
     winner_model: str = Field(..., description="Nombre del modelo ganador en producción")
     hyperparameter_tuning: dict[str, Any] = Field(..., description="Resultados de búsqueda de hiperparámetros")
     benchmark_summary: list[dict[str, Any]] = Field(..., description="Comparativa de modelos evaluados")
+
+
+class MessageAuditRecord(BaseModel):
+    """Esquema de un registro individual en la auditoría de mensajes persistidos."""
+
+    id: int = Field(..., description="Identificador único autoincremental de la auditoría")
+    created_at: datetime = Field(..., description="Marca de tiempo UTC en la que se evaluó el mensaje")
+    message_text: str = Field(..., description="Texto original del mensaje evaluado")
+    prediction: str = Field(..., description="Etiqueta predicha ('ham' o 'spam')")
+    probability_spam: float = Field(..., description="Probabilidad calibrada de spam")
+    probability_ham: float = Field(..., description="Probabilidad calibrada de ham")
+    risk_level: str = Field(..., description="Nivel semántico de riesgo ('BAJO', 'MEDIO', 'CRÍTICO')")
+    detected_tokens: list[str] = Field(default_factory=list, description="Tokens sintéticos detectados")
+    latency_ms: float = Field(..., description="Latencia de procesamiento en milisegundos")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class HistoryResponse(BaseModel):
+    """Esquema de respuesta paginada para el historial de auditoría de mensajes."""
+
+    total: int = Field(..., description="Total de registros de auditoría persistidos en el sistema")
+    limit: int = Field(..., description="Límite de registros solicitados por página")
+    offset: int = Field(..., description="Desplazamiento aplicado a la consulta")
+    records: list[MessageAuditRecord] = Field(..., description="Lista de registros de auditoría ordenados por fecha descendente")
