@@ -3,11 +3,12 @@ import { MessageAnalyzer } from './components/MessageAnalyzer';
 import { NLPStepViewer } from './components/NLPStepViewer';
 import { MetricsDashboard } from './components/MetricsDashboard';
 import { HistoryAuditTable } from './components/HistoryAuditTable';
-import { Activity, BarChart2, Database, Moon, Shield, Sun } from 'lucide-react';
+import { ProjectOverview } from './components/ProjectOverview';
+import { Activity, BarChart2, BookOpen, Database, Moon, Shield, Sun } from 'lucide-react';
 import { PredictionResponse, checkHealth } from './services/api';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'analyzer' | 'metrics' | 'history'>('analyzer');
+  const [activeTab, setActiveTab] = useState<'analyzer' | 'metrics' | 'history' | 'overview'>('analyzer');
   const [isLightMode, setIsLightMode] = useState<boolean>(false);
   const [analyzedText, setAnalyzedText] = useState<string>('');
   const [backendStatus, setBackendStatus] = useState<string>('Verificando...');
@@ -53,15 +54,7 @@ export const App: React.FC = () => {
               </h1>
             </div>
             <p className="text-xs app-text-secondary mt-1">
-              Microservicio NLP + Machine Learning con explicabilidad transparente. Paleta Oficial:{' '}
-              <a
-                href="https://coolors.co/2b2d42-8d99ae-edf2f4-ef233c-4361ee"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-xs font-bold text-[#4361ee] underline hover:text-[#3751d8]"
-              >
-                [Coolors: #2b2d42-#8d99ae-#edf2f4-#ef233c-#4361ee]
-              </a>
+              Plataforma de ciberseguridad y análisis lingüístico en tiempo real para mensajería en español.
             </p>
           </div>
 
@@ -136,6 +129,19 @@ export const App: React.FC = () => {
             <Database className="w-4 h-4" />
             03. Auditoría en PostgreSQL
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('overview')}
+            className={`px-4 py-2 text-xs font-mono rounded-md flex items-center gap-2 border ${
+              activeTab === 'overview'
+                ? 'bg-[#4361ee] text-white border-[#4361ee] font-bold'
+                : 'bg-[#2b2d42] text-[#edf2f4] border-[#8d99ae] hover:bg-[#393c59]'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            04. Racional y Especificación del Proyecto
+          </button>
         </nav>
 
         {/* Contenido Dinámico de la Vista */}
@@ -165,20 +171,20 @@ export const App: React.FC = () => {
           {activeTab === 'history' && (
             <HistoryAuditTable onSelectMessage={handleSelectFromHistory} />
           )}
+
+          {activeTab === 'overview' && <ProjectOverview />}
         </main>
       </div>
 
-      {/* Pie de Página Canónico */}
+      {/* Pie de Página */}
       <footer className="max-w-7xl mx-auto w-full mt-12 pt-6 border-t app-border text-xs app-text-muted flex flex-col sm:flex-row items-center justify-between gap-2 font-mono">
         <span>
-          SMS Sentinel — Frontend React 18 + Vite [Puerto 3090]
+          SMS Sentinel — Plataforma de Inferencia y Auditoría de Seguridad
         </span>
         <div className="flex items-center gap-3">
-          <span className="text-[#4361ee] font-bold">Cero Degradados</span>
+          <span className="text-[#8d99ae]">FastAPI • React • PostgreSQL</span>
           <span>•</span>
-          <span className="text-[#edf2f4]">Cero Animaciones</span>
-          <span>•</span>
-          <span className="text-[#8d99ae]">Design System Canónico</span>
+          <span className="text-[#4361ee] font-medium">NLP & Machine Learning</span>
         </div>
       </footer>
     </div>

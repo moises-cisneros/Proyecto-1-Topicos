@@ -29,12 +29,27 @@ export const NLPStepViewer: React.FC<NLPStepViewerProps> = ({ currentText }) => 
   };
 
   useEffect(() => {
-    const text = currentText?.trim() || DEFAULT_SAMPLE;
-    fetchDebugInfo(text);
+    if (currentText && currentText.trim().length > 0) {
+      fetchDebugInfo(currentText.trim());
+    }
   }, [currentText]);
 
-  // Contenido formativo por paso según datos de la API o valores por defecto
+  // Contenido formativo por paso según datos de la API
   const renderStepContent = () => {
+    if (!currentText?.trim() && !debugData && !loading) {
+      return (
+        <div className="p-8 text-center text-xs font-mono app-text-muted border app-border rounded-lg app-card-subtle">
+          <Layers className="w-8 h-8 text-[#4361ee] mx-auto mb-2 opacity-70" />
+          <p className="font-semibold text-sm app-text-primary mb-1">
+            Visor de Trazabilidad del Pipeline NLP
+          </p>
+          <p>
+            Ingrese y analice un mensaje SMS arriba para inspeccionar las 5 fases de transformación lingüística en tiempo real.
+          </p>
+        </div>
+      );
+    }
+
     if (loading) {
       return (
         <div className="p-6 text-center text-xs font-mono app-text-muted flex items-center justify-center gap-2">
@@ -64,7 +79,7 @@ export const NLPStepViewer: React.FC<NLPStepViewerProps> = ({ currentText }) => 
               Cadena de texto recibida sin ningún tipo de modificación o filtro.
             </p>
             <div className="app-card-subtle border app-border p-4 rounded-lg font-mono text-sm app-text-secondary whitespace-pre-line">
-              {debugData?.original || currentText || DEFAULT_SAMPLE}
+              {debugData?.original || currentText || 'Sin mensaje analizado.'}
             </div>
           </div>
         );

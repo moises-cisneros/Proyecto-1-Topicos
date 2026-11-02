@@ -258,9 +258,9 @@ export const MessageAnalyzer: React.FC<MessageAnalyzerProps> = ({ onAnalyzeSucce
         <div className="border-t app-border pt-3 mt-4 text-xs font-mono app-text-muted flex justify-between">
           <span className="flex items-center gap-1">
             <ShieldAlert className="w-3.5 h-3.5 text-[#4361ee]" />
-            Modelo: LogisticRegression (L2)
+            Modelo: Pipeline en Producción
           </span>
-          <span>Latencia: {result ? `${result.latency_ms} ms` : '~2.8 ms'}</span>
+          <span>Latencia: {result ? `${result.latency_ms} ms` : '—'}</span>
         </div>
       </div>
     </div>
