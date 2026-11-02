@@ -1,0 +1,32 @@
+{
+  "name": "sms-sentinel-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SMS Sentinel - Detección de Spam y Phishing en SMS mediante NLP y Machine Learning",
+  "scripts": {
+    "dev": "pnpm --filter sms-sentinel-web dev",
+    "build": "pnpm --filter sms-sentinel-web build",
+    "preview": "pnpm --filter sms-sentinel-web preview",
+    "ml:train": "python src/models/train.py",
+    "ml:train:fast": "python src/models/train.py --fast",
+    "ml:evaluate": "python src/models/evaluate.py",
+    "api:dev": "uvicorn api.main:app --reload --port 8090",
+    "test": "pytest -v",
+    "test:coverage": "pytest --cov=src --cov=api tests/",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "keywords": [
+    "sms",
+    "spam-detection",
+    "phishing",
+    "nlp",
+    "machine-learning",
+    "fastapi",
+    "react",
+    "docker"
+  ],
+  "author": "Moises Cisneros <moisescisnerosdl@gmail.com>",
+  "license": "MIT"
+}
