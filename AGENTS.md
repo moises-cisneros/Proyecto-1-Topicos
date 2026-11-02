@@ -23,3 +23,4 @@ Este repositorio contiene el sistema **SMS Sentinel (Detección de Spam y Phishi
 1. `nlp-text-pipeline`: Especificación técnica y validación del preprocesamiento de texto en español (regex, tokens, stopwords con whitelist, stemming vs lematización, n-gramas, TF-IDF y serialización en Pipeline).
 2. `ml-model-evaluation`: Especificación técnica y benchmarking de modelos de machine learning (Baseline DummyClassifier, MultinomialNB, LogisticRegression, sintonía con 5-Fold Stratified CV, métricas completas y análisis de errores).
 3. `api-service-integration`: Especificación de integración del servicio REST (FastAPI), persistencia de auditoría (PostgreSQL), inspector visual de NLP en frontend (React) y pruebas de sensibilidad ante reconfiguraciones de parámetros.
+4. `contributions-tracker`: Especificación técnica y validación automatizada de registro de contribuciones y justificación de decisiones en CONTRIBUCIONES.md.

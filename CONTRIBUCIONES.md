@@ -33,7 +33,7 @@ Commits fundacionales en la rama `main` para establecer las bases de arquitectur
 | `b9c7806` | `main` | `docs` | Establecer arquitectura limpia hexagonal, especificación de diseño UI, mockups interactivos y normas de contribución. | **Decisión:** Documentar aislamiento de puertos (`3090`, `8090`, `5439`) y matriz semántica de diseño. **Alternativa descartada:** Codificar sin especificación formal. |
 | `b207cc6` | `main` | `ci` | Configurar canal de integración continua en GitHub Actions, plantillas de issues/PRs y skills técnicas de verificación. | **Decisión:** Pipeline automatizado que valida sintaxis Python, tests y frontend. **Alternativa descartada:** Verificación manual propensa a omisiones. |
 | `577a02a` | `main` | `docs(contribuciones)` | Inicializar registro de contribuciones del proyecto y mapa de historias de usuario. | **Decisión:** Trazabilidad commit a commit para auditoría de calidad de software. **Alternativa descartada:** Documentar contribuciones al final de memoria. |
-| `317084a` | `main` | `chore(github)` | Incorporar sección de mapeo de archivos por arquitectura en plantilla de User Story. | **Decisión:** Exigir en cada issue la lista explícita de archivos a crear y modificar. **Alternativa descartada:** Issues ambiguas sin mapeo de archivos de arquitectura. |
+| `7105603` | `main` | `chore(github)` | Incorporar sección de mapeo de archivos por arquitectura en plantilla de User Story. | **Decisión:** Exigir en cada issue la lista explícita de archivos a crear y modificar. **Alternativa descartada:** Issues ambiguas sin mapeo de archivos de arquitectura. |
 
 ---
 

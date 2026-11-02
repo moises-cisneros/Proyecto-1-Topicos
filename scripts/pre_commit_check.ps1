@@ -46,6 +46,18 @@ if ($PythonFiles.Count -gt 0) {
     Write-Host "[OK] Sintaxis Python correcta en todos los modulos." -ForegroundColor Green
 }
 
+# 4. Validar formato e integridad de CONTRIBUCIONES.md
+if (Test-Path "scripts/verify_contributions.py") {
+    Write-Host "==> Verificando integridad de CONTRIBUCIONES.md..." -ForegroundColor Cyan
+    $contributionsCheck = python scripts/verify_contributions.py 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "[ERROR] Inconsistencias detectadas en CONTRIBUCIONES.md:" -ForegroundColor Red
+        Write-Host $contributionsCheck -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "[OK] CONTRIBUCIONES.md verificado correctamente." -ForegroundColor Green
+}
+
 Write-Host "==> [Pre-Commit Check] Todas las validaciones de calidad pasaron exitosamente." -ForegroundColor Green
 exit 0
 

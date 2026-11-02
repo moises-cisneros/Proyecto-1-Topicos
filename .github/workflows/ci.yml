@@ -52,6 +52,12 @@ jobs:
             exit 1
           fi
 
+      - name: Validar integridad y trazabilidad de CONTRIBUCIONES.md
+        run: |
+          if [ -f scripts/verify_contributions.py ]; then
+            python scripts/verify_contributions.py
+          fi
+
   frontend-build:
     name: Frontend React CI
     runs-on: ubuntu-latest
