@@ -10,6 +10,7 @@ from src.nlp.normalizer import (
 )
 from src.nlp.pipeline_builder import (
     build_sms_pipeline,
+    explain_text,
     inspect_pipeline_prediction,
     preprocess_for_pipeline,
 )
@@ -46,4 +47,5 @@ __all__ = [
     "preprocess_for_pipeline",
     "build_sms_pipeline",
     "inspect_pipeline_prediction",
+    "explain_text",
 ]
