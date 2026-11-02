@@ -1,24 +1,16 @@
 {
-  "timestamp": "2026-11-02T03:35:43Z",
+  "timestamp": "2026-11-02T20:37:08Z",
   "winner_model": "Logistic Regression (Challenger)",
   "hyperparameter_tuning": {
     "best_nb_alpha": 0.1,
-    "best_nb_f1": 0.9613688292560223,
+    "best_nb_f1": 0.9614,
     "nb_cv_grid": {
-      "0.01": 0.9558,
-      "0.1": 0.9614,
-      "0.5": 0.947,
-      "1.0": 0.9302,
-      "2.0": 0.8902
+      "fast_mode": true
     },
     "best_lr_c": 50.0,
-    "best_lr_f1": 0.963446043453164,
+    "best_lr_f1": 0.9634,
     "lr_cv_grid": {
-      "0.01": 0.464,
-      "0.1": 0.4871,
-      "1.0": 0.9263,
-      "10.0": 0.9572,
-      "50.0": 0.9634
+      "fast_mode": true
     }
   },
   "benchmark_summary": [
@@ -63,7 +55,7 @@
         "f1_macro": 0.4642,
         "f1_weighted": 0.8043
       },
-      "training_duration_seconds": 10.134
+      "training_duration_seconds": 17.109
     },
     {
       "model_name": "Multinomial Naive Bayes",
@@ -106,7 +98,7 @@
         "f1_macro": 0.9594,
         "f1_weighted": 0.9816
       },
-      "training_duration_seconds": 11.61
+      "training_duration_seconds": 14.092
     },
     {
       "model_name": "Logistic Regression (Challenger)",
@@ -149,7 +141,7 @@
         "f1_macro": 0.9709,
         "f1_weighted": 0.9865
       },
-      "training_duration_seconds": 12.355
+      "training_duration_seconds": 15.514
     }
   ],
   "winner_metrics": {
@@ -193,7 +185,7 @@
       "f1_macro": 0.9709,
       "f1_weighted": 0.9865
     },
-    "training_duration_seconds": 12.355
+    "training_duration_seconds": 15.514
   },
   "qualitative_error_analysis": {
     "false_positives": [
@@ -289,5 +281,5 @@
     "random_state": 42,
     "test_ratio": 0.2
   },
-  "total_execution_time_seconds": 524.4
+  "total_execution_time_seconds": 63.79
 }

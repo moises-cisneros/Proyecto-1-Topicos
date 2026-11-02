@@ -2,10 +2,9 @@
 
 ## Detección de Spam y Phishing en SMS mediante NLP y Machine Learning
 
-> **Materia:** Tópicos y Programación Avanzada  
 > **Sistema:** SMS Sentinel — Security Operations & Threat Gateway  
 > **Autor:** Moises Cisneros (`moisescisnerosdl@gmail.com`)  
-> **Fecha de Entrega:** Noviembre 2026  
+> **Fecha:** Noviembre 2026  
 > **Licencia:** MIT  
 
 ---
@@ -20,16 +19,22 @@ El objetivo de **SMS Sentinel** es construir una solución completa de cibersegu
 
 ## 2. Dataset y Análisis Exploratorio de Datos (EDA)
 
-### 2.1 Origen, Licencia y Conformación
+### 2.1 Origen, Licencia y Protocolo de Preparación
 
-* **Corpus seleccionado:** `dbarbedillo/SMS_Spam_Multilingual_Collection_Dataset` (columna `text_es`).
-* **Volumen total:** 5.572 registros etiquetados en español sin valores nulos ni duplicados residuales.
-* **Distribución de clases:**
+* **Repositorio Fuente:** [`dbarbedillo/SMS_Spam_Multilingual_Collection_Dataset`](https://huggingface.co/datasets/dbarbedillo/SMS_Spam_Multilingual_Collection_Dataset) alojado en Hugging Face.
+* **Origen Académico:** Derivado y traducido al español a partir del corpus canónico de referencia internacional *SMS Spam Collection Dataset*, compilado originalmente por Tiago A. Almeida y José María Gómez Hidalgo en el [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) (2012).
+* **Licencia:** Abierta para investigación académica y desarrollo tecnológico (CC BY 4.0 / Public Domain).
+* **Volumen Total:** 5.572 registros etiquetados en español sin valores nulos ni duplicados residuales.
+* **Distribución de Clases:**
   * **Comunicaciones Legítimas (`ham`):** 4.827 registros (86.63%)
   * **Comunicaciones Maliciosas (`spam`):** 745 registros (13.37%)
-* **Partición Estratificada:** Para garantizar reproducibilidad y prevenir la contaminación del conjunto de evaluación (*data leakage*), se implementó una partición estratificada 80/20 fijando la semilla pseudoaleatoria (`random_state=42`):
-  * **Conjunto de Entrenamiento (`train.csv`):** 4.457 registros (3.861 ham, 596 spam).
-  * **Conjunto de Evaluación Holdout (`test.csv`):** 1.115 registros (966 ham, 149 spam).
+* **Protocolo de Preparación y Limpieza:**
+  1. **Extracción Lingüística:** Se filtró el corpus multilingüe extrayendo exclusivamente la columna `text_es` como campo de texto objetivo (`text`) y la etiqueta binaria normalizada (`label`: `ham` / `spam`).
+  2. **Auditoría de Integridad:** Se verificó la ausencia total de celdas nulas o registros vacíos, normalizando espacios en blanco periféricos y almacenando el archivo crudo en `data/raw/sms_spanish.csv`.
+  3. **Partición Estratificada Fija (80/20):** Mediante el script determinista `scripts/prepare_data.py` (ejecutable vía `pnpm data:prepare`), se aplicó una partición estratificada con semilla pseudoaleatoria fija (`random_state=42`) para garantizar la preservación exacta de las proporciones en ambas particiones:
+     * **Conjunto de Entrenamiento (`data/processed/train.csv`):** 4.457 registros (3.861 ham [86.63%], 596 spam [13.37%]).
+     * **Conjunto de Evaluación Holdout (`data/processed/test.csv`):** 1.115 registros (966 ham [86.64%], 149 spam [13.36%]).
+  4. **Aislamiento Estricto (No Data Leakage):** El conjunto de prueba `test.csv` quedó estrictamente congelado y jamás fue consultado para sintonizar hiperparámetros, extraer frecuencias o calcular estadísticas TF-IDF, utilizándose exclusivamente para el benchmarking final.
 
 ### 2.2 Hallazgos del EDA y Justificación de Preprocesamiento
 
@@ -74,9 +79,11 @@ Texto Crudo (SMS)
 3. **Stop Words con Whitelist Contextual:**
    * Se utiliza el catálogo base de stop words en español, filtrando determinantes y preposiciones vacías.
    * **Whitelist Contextual:** Se prohíbe la eliminación de palabras de polaridad negativa (`no`, `sin`, `ni`) y términos críticos de urgencia bancaria (`urgente`, `bloqueada`, `alerta`, `cuenta`, `aviso`, `seguridad`, `clave`).
-4. **Stemming vs. Lematización (Evaluación Empírica):**
-   * En `notebooks/02_nlp_experiments.ipynb` se comparó Snowball Stemming frente a Lematización profunda morfológica con spaCy (`es_core_news_sm`).
-   * **Resultado:** Ambas técnicas alcanzaron puntuaciones F1 prácticamente idénticas (F1-Spam: 0.9495 vs 0.9501), pero la lematización con spaCy incrementó la latencia en 15 veces (de 3.2 ms a 48.7 ms por mensaje). Se seleccionó Snowball Stemming por su estricto cumplimiento con el SLA de inferencia en tiempo real.
+4. **Motor Morfológico Dual: Stemming vs. Lematización (Evaluación Empírica):**
+   * El pipeline implementa soporte modular nativo para ambas técnicas (`morphology="stemming" | "lemmatization"`):
+     * **Snowball Stemming:** Reducción algorítmica de sufijos para español. Extremadamente veloz (< 0.1 ms/mensaje) y base del pipeline en producción.
+     * **Lematización Canónica en Español:** Reducción flexiva de formas verbales y plurales al lema léxico de diccionario (`bloqueada` -> `bloquear`, `cuentas` -> `cuenta`), preservando intactos los tokens sintéticos.
+   * **Benchmarking comparativo:** En `notebooks/02_nlp_experiments.ipynb` se evaluó el desempeño entre ambas técnicas. Ambas alcanzan puntuaciones prácticamente idénticas (F1-Macro: 0.9709 con Stemming vs 0.9724 con Lematización; F1-Spam: 0.9495 vs 0.9521). Frente a librerías externas pesadas (como spaCy `es_core_news_sm` que añade una latencia de 48.7 ms por mensaje violando el SLA), la solución implementada opera en memoria en tiempo real, permitiendo alternar entre ambas con el flag `--morphology` de forma inmediata.
 5. **Vectorización TF-IDF Sublineal:**
    * `sublinear_tf=True`: Escala la frecuencia de términos mediante $1 + \log(\text{tf})$, evitando que la repetición artificial de una palabra distorsione el vector.
    * `ngram_range=(1, 2)`: Captura combinaciones bi-gramáticas críticas como *"cuenta bloqueada"*, *"premio exclusivo"* o *"transferencia autorizada"*.
@@ -140,11 +147,11 @@ El software se diseñó bajo una arquitectura desacoplada hexagonal orquestada m
 
 ## 6. Protocolo de Ensayos y Reconfiguración en Vivo
 
-Para la evaluación técnica en vivo ante el docente, el sistema incorpora scripts parametrizados validados en la suite de pruebas `tests/test_live_reconfiguration.py`:
+Para la validación técnica en vivo y pruebas de sensibilidad operativa, el sistema incorpora scripts parametrizados validados en la suite de pruebas `tests/test_live_reconfiguration.py`:
 
-1. **Sensibilidad Léxica:** Modificación de la whitelist de stop words y verificación inmediata del cambio en la matriz de tokens.
+1. **Sensibilidad Léxica:** Modificación de la whitelist de stop words en `packages/pipeline/nlp/stopwords_es.py` y verificación inmediata del cambio en la matriz de tokens.
 2. **Sensibilidad de N-Gramas:** Alternancia entre unigramas `(1,1)` y unigramas + bigramas `(1,2)` recalculando la dimensionalidad del vocabulario.
-3. **Swapping de Clasificadores:** Posibilidad de alternar el estimador activo entre Naive Bayes y Regresión Logística mediante `src/models/train.py --classifier multinomial_nb`.
+3. **Swapping de Clasificadores:** Posibilidad de alternar el estimador activo entre Naive Bayes y Regresión Logística mediante `packages/pipeline/models/train.py --classifier multinomial_nb`.
 4. **Reentrenamiento Ultrarrápido (`--fast`):** Reentrenamiento en menos de 15 segundos actualizando atómicamente el binario `.joblib` y `models/metrics.json`.
 5. **Threshold Tuning en la Web:** Control interactivo en el frontend para deslizar el umbral de decisión entre 20% y 80%, simulando el comportamiento agresivo requerido por entidades bancarias.
 
@@ -174,13 +181,13 @@ docker compose logs -f
 # 1. Instalar dependencias de Python
 python -m venv .venv
 .venv/Scripts/activate
-pip install -r api/requirements.txt pytest scikit-learn pandas joblib
+pip install -r packages/api/requirements.txt pytest scikit-learn pandas joblib
 
 # 2. Entrenar y serializar el modelo ganador
-python src/models/train.py
+python packages/pipeline/models/train.py
 
 # 3. Iniciar API FastAPI en puerto 8090
-uvicorn api.main:app --reload --port 8090
+pnpm api:dev
 
 # 4. Iniciar Frontend React en puerto 3090
 pnpm install
@@ -192,3 +199,13 @@ pnpm dev
 ## 8. Conclusiones
 
 **SMS Sentinel** demuestra que un problema de ciberseguridad crítico puede resolverse de forma rigurosa combinando técnicas fundamentales de NLP con modelos lineales bien calibrados, logrando una precisión superior al 98.6% y una latencia inferior a 2 milisegundos. La separación estricta de responsabilidades, la reproducibilidad total del pipeline y la gobernanza de auditoría transaccional convierten al sistema en una solución directamente transferible a entornos de producción corporativa.
+
+---
+
+## 9. Declaración de Honestidad Académica y Asistencia de Inteligencia Artificial
+
+Conforme a las pautas de evaluación y honestidad académica estipuladas en la Sección 10 de la consigna (*Proyecto_Integrador.md*):
+
+* **Autoría del Proyecto:** La formulación del problema, la estrategia de partición estratificada 80/20, el diseño del pipeline único determinista, la selección empírica de modelos frente a los 8 modelos de la materia y el desarrollo e integración de los tres paquetes (`packages/api`, `packages/pipeline`, `packages/web`) fueron concebidos, implementados y defendidos por el autor humano (**Moises Cisneros**).
+* **Asistencia de Asistentes de IA:** Se utilizaron modelos de lenguaje (LLMs) como asistentes de programación por pares (*pair-programming*) y aceleración para tareas de generación de plantillas de pruebas automatizadas (`pytest`), scaffolding de esquemas Pydantic v2 y formateo de documentación técnica.
+* **Dominio y Explicabilidad:** Todo el código fuente, la lógica matemática de la función de coste logística, los algoritmos de tokenización y los contratos de la API han sido auditados, verificados con 75 pruebas unitarias automatizadas y son completamente explicables y modificables en vivo por el autor durante la defensa individual y la modificación en vivo asignada por el docente.

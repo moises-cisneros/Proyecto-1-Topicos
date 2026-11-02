@@ -13,11 +13,11 @@ Este registro documenta la autoría y el dominio técnico en cada una de las cap
 | Capa Técnica | Módulo / Directorio | Estado | Commits Clave |
 | :--- | :--- | :---: | :--- |
 | **Capa 1: Datos & EDA** | `data/`, `notebooks/01_eda.ipynb` | Implementado | `67836de`, `02a30da`, `9263b5e`, `2aa0ed2` |
-| **Capa 2: Pipeline de NLP** | `src/nlp/` (normalizer, stopwords, tokenizer) | Implementado | `de1c006`, `796c7b9`, `aeb4c56`, `3094213` |
-| **Capa 3: Modelado & ML** | `src/models/` (train, evaluate, .joblib) | Implementado | `6b78043`, `1f7f3c3`, `7aa9ded`, `310ecaf`, `d8ee8a8` |
-| **Capa 4: Backend REST API** | `api/` (FastAPI, esquemas Pydantic, PostgreSQL) | Implementado | `282bfcf`, `e15ee52`, `9f7ef4e`, `7533400`, `52a82ba`, `58a8000`, `1ff9285`, `5ceb9a5`, `17af394` |
-| **Capa 5: Frontend UI & Explicabilidad** | `web/` (React, visor NLP, métricas) | Implementado | `c26c2b7`, `ae8766b`, `03d1acc`, `605e4c5`, `185a2f4`, `17af394` |
-| **Capa 6: DevOps, Testing & CI/CD** | `.github/`, `docker-compose.yml`, `package.json` | Implementado | `b207cc6`, `bab8996`, `d27ca3a`, `a5b8b73` |
+| **Capa 2: Pipeline de NLP** | `packages/pipeline/nlp/` (normalizer, stopwords, tokenizer, morphology) | Implementado | `de1c006`, `796c7b9`, `aeb4c56`, `3094213` |
+| **Capa 3: Modelado & ML** | `packages/pipeline/models/` (train, evaluate, .joblib) | Implementado | `6b78043`, `1f7f3c3`, `7aa9ded`, `310ecaf`, `d8ee8a8` |
+| **Capa 4: Backend REST API** | `packages/api/` (FastAPI, esquemas Pydantic, PostgreSQL) | Implementado | `282bfcf`, `e15ee52`, `9f7ef4e`, `7533400`, `52a82ba`, `58a8000`, `1ff9285`, `5ceb9a5`, `17af394` |
+| **Capa 5: Frontend UI & Explicabilidad** | `packages/web/` (React, visor NLP, métricas) | Implementado | `c26c2b7`, `ae8766b`, `03d1acc`, `605e4c5`, `185a2f4`, `17af394` |
+| **Capa 6: DevOps, Testing & CI/CD** | `.github/`, `docker-compose.yml`, `package.json`, `resources/` | Implementado | `b207cc6`, `bab8996`, `d27ca3a`, `a5b8b73` |
 
 ---
 
@@ -74,7 +74,11 @@ Registro de funcionalidades desarrolladas mediante ramas de trabajo (`feat/*`) e
 | `bab8996` | `feat/hu08-docker-orchestration` | #8 | `feat(docker)` | Configurar `docker-compose.yml` con aislamiento de puertos (`3090`, `8090`, `5439`), red bridge y healthchecks. | **Decisión:** Aislar puertos (3090, 8090, 5439) para garantizar cero colisiones con entornos locales y orquestar dependencias con healthchecks. **Alternativa descartada:** Utilizar puertos por defecto (80, 8000, 5432) propensos a conflictos con servicios existentes en el host. |
 | `d27ca3a` | `feat/hu08-docker-orchestration` | #8 | `chore(pnpm)` | Centralizar scripts globales de ejecución y desarrollo monorepo en `package.json` raíz y `pnpm-workspace.yaml`. | **Decisión:** Unificar comandos operativos (`pnpm dev`, `pnpm ml:train`, `pnpm docker:up`, `pnpm test`) en la raíz del repositorio. **Alternativa descartada:** Obligar a navegar manualmente entre subcarpetas `web/` o `api/` para ejecutar tareas habituales. |
 | `a5b8b73` | `feat/hu08-docker-orchestration` | #8 | `test(reconfig)` | Implementar suite de 7 pruebas de sensibilidad léxica, n-gramas, swapping de clasificadores y reentrenamiento en vivo en `< 2` minutos. | **Decisión:** Incorporar modo `--fast` en `train.py` para permitir ensayos de reentrenamiento y calibración de sensibilidad en segundos. **Alternativa descartada:** Depender únicamente del grid search exhaustivo de 5-Fold CV que bloquea la verificación en vivo por varios minutos. |
+| `185a2f4` | `main` | #7 | `fix(web)` | Limpiar textos de diseño y añadir vista de especificación del proyecto. | **Decisión:** Remover menciones a notas y tareas de diseño de interfaz, consolidando diseño sobrio y profesional. **Alternativa descartada:** Dejar textos de prototipado en producción. |
 | `17af394` | `main` | #7 | `feat(web)` | Implementar `BatchAnalyzer` para ingesta masiva CSV, calibrador de umbrales interactivo, purgar textos académicos/puertos en UI y compilar `docs/informe_tecnico.md`. | **Decisión:** Eliminar solapas estáticas de texto de la UI, proveer ingesta masiva CSV con exportación de reportes, calibrador de sensibilidad y registro de actividad profesional. **Alternativa descartada:** Mantener pestañas numeradas y textos teóricos en el frontend que degradan la experiencia de producto real. |
+| `6ebde90` | `main` | #7 | `docs(contribuciones)` | Registrar mejoras de ingesta masiva, calibración dinámica de umbrales y depuración de UI. | **Decisión:** Mantener sincronía continua en CONTRIBUCIONES.md con cada avance significativo. **Alternativa descartada:** Posponer la documentación de contribuciones al final del ciclo. |
+| `206c45b` | `main` | #8 | `refactor(monorepo)` | Reorganizar arquitectura en 3 paquetes bajo `packages/` (`packages/api`, `packages/pipeline`, `packages/web`) y centralizar recursos de prueba en `resources/`. | **Decisión:** Desacoplar estrictamente componentes en monorepo formal pnpm, eliminar dependencias circulares y desacoplar muestras JSON y CSV en `resources/example/`. **Alternativa descartada:** Mantener carpetas raíz dispersas (`api/`, `src/`, `web/`) con cadenas de prueba hardcodeadas dentro de componentes. |
+| `2fafb4a` | `main` | #8 | `feat(presentation)` | Implementar generador automatizado de diapositivas corporativas en PPTX (tema claro y oscuro) y formato Marp Markdown. | **Decisión:** Generar diapositivas en código determinista con python-pptx, visuales nativos limpios y notas completas del orador para cada diapositiva. **Alternativa descartada:** Crear diapositivas manuales no reproducibles propensas a desalinearse de las métricas reales del código. |
 
 ---
 
@@ -82,4 +86,4 @@ Registro de funcionalidades desarrolladas mediante ramas de trabajo (`feat/*`) e
 
 * **Trazabilidad y Autoría:** El 100% de los commits pertenecen a la cuenta configurada del autor, sin cuentas compartidas ni reescrituras destructivas de historial (`no force-push`).
 * **Justificación de Modelos:** Racional teórico y matemático de selección y descarte de modelos de Machine Learning documentado en `ARCHITECTURE.md`.
-* **Pruebas de Sensibilidad y Reconfiguración:** Pipeline modularizado con script de reentrenamiento unificado (`pnpm ml:train` o `python src/models/train.py`), permitiendo modificar stopwords, n-gramas o hiperparámetros y verificar el cambio de métricas en tiempo real.
+* **Pruebas de Sensibilidad y Reconfiguración:** Pipeline modularizado con script de reentrenamiento unificado (`pnpm ml:train` o `python packages/pipeline/models/train.py`), permitiendo modificar stopwords, n-gramas o hiperparámetros y verificar el cambio de métricas en tiempo real.

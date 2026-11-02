@@ -8,6 +8,7 @@
     "build": "pnpm --filter sms-sentinel-web build",
     "preview": "pnpm --filter sms-sentinel-web preview",
     "setup:env": "node scripts/setup_env.cjs",
+    "data:prepare": "node scripts/run_python.cjs scripts/prepare_data.py",
     "ml:train": "node scripts/run_python.cjs packages/pipeline/models/train.py",
     "ml:train:fast": "node scripts/run_python.cjs packages/pipeline/models/train.py --fast",
     "ml:train:lemmatize": "node scripts/run_python.cjs packages/pipeline/models/train.py --fast --morphology lemmatization",
