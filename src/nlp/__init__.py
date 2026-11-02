@@ -15,6 +15,12 @@ from src.nlp.stopwords_es import (
     filter_stopwords,
     get_spanish_stopwords,
 )
+from src.nlp.tokenizer import (
+    inspect_nlp_pipeline,
+    preprocess_text,
+    stem_tokens,
+    tokenize_text,
+)
 
 __all__ = [
     "TOKEN_URL",
@@ -28,4 +34,8 @@ __all__ = [
     "DEFAULT_WHITELIST",
     "get_spanish_stopwords",
     "filter_stopwords",
+    "tokenize_text",
+    "stem_tokens",
+    "preprocess_text",
+    "inspect_nlp_pipeline",
 ]
