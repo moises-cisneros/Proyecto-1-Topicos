@@ -15,8 +15,8 @@ Este registro documenta la autoría y el dominio técnico en cada una de las cap
 | **Capa 1: Datos & EDA** | `data/`, `notebooks/01_eda.ipynb` | Implementado | `67836de`, `02a30da`, `9263b5e`, `2aa0ed2` |
 | **Capa 2: Pipeline de NLP** | `src/nlp/` (normalizer, stopwords, tokenizer) | Implementado | `de1c006`, `796c7b9`, `aeb4c56`, `3094213` |
 | **Capa 3: Modelado & ML** | `src/models/` (train, evaluate, .joblib) | Implementado | `6b78043`, `1f7f3c3`, `7aa9ded`, `310ecaf`, `d8ee8a8` |
-| **Capa 4: Backend REST API** | `api/` (FastAPI, esquemas Pydantic, PostgreSQL) | Implementado | `282bfcf`, `e15ee52`, `9f7ef4e`, `7533400`, `52a82ba`, `58a8000`, `1ff9285`, `5ceb9a5` |
-| **Capa 5: Frontend UI & Explicabilidad** | `web/` (React, visor NLP, métricas) | Implementado | `c26c2b7`, `ae8766b`, `03d1acc`, `605e4c5` |
+| **Capa 4: Backend REST API** | `api/` (FastAPI, esquemas Pydantic, PostgreSQL) | Implementado | `282bfcf`, `e15ee52`, `9f7ef4e`, `7533400`, `52a82ba`, `58a8000`, `1ff9285`, `5ceb9a5`, `17af394` |
+| **Capa 5: Frontend UI & Explicabilidad** | `web/` (React, visor NLP, métricas) | Implementado | `c26c2b7`, `ae8766b`, `03d1acc`, `605e4c5`, `185a2f4`, `17af394` |
 | **Capa 6: DevOps, Testing & CI/CD** | `.github/`, `docker-compose.yml`, `package.json` | Implementado | `b207cc6`, `bab8996`, `d27ca3a`, `a5b8b73` |
 
 ---
@@ -74,6 +74,7 @@ Registro de funcionalidades desarrolladas mediante ramas de trabajo (`feat/*`) e
 | `bab8996` | `feat/hu08-docker-orchestration` | #8 | `feat(docker)` | Configurar `docker-compose.yml` con aislamiento de puertos (`3090`, `8090`, `5439`), red bridge y healthchecks. | **Decisión:** Aislar puertos (3090, 8090, 5439) para garantizar cero colisiones con entornos locales y orquestar dependencias con healthchecks. **Alternativa descartada:** Utilizar puertos por defecto (80, 8000, 5432) propensos a conflictos con servicios existentes en el host. |
 | `d27ca3a` | `feat/hu08-docker-orchestration` | #8 | `chore(pnpm)` | Centralizar scripts globales de ejecución y desarrollo monorepo en `package.json` raíz y `pnpm-workspace.yaml`. | **Decisión:** Unificar comandos operativos (`pnpm dev`, `pnpm ml:train`, `pnpm docker:up`, `pnpm test`) en la raíz del repositorio. **Alternativa descartada:** Obligar a navegar manualmente entre subcarpetas `web/` o `api/` para ejecutar tareas habituales. |
 | `a5b8b73` | `feat/hu08-docker-orchestration` | #8 | `test(reconfig)` | Implementar suite de 7 pruebas de sensibilidad léxica, n-gramas, swapping de clasificadores y reentrenamiento en vivo en `< 2` minutos. | **Decisión:** Incorporar modo `--fast` en `train.py` para permitir ensayos de reentrenamiento y calibración de sensibilidad en segundos. **Alternativa descartada:** Depender únicamente del grid search exhaustivo de 5-Fold CV que bloquea la verificación en vivo por varios minutos. |
+| `17af394` | `main` | #7 | `feat(web)` | Implementar `BatchAnalyzer` para ingesta masiva CSV, calibrador de umbrales interactivo, purgar textos académicos/puertos en UI y compilar `docs/informe_tecnico.md`. | **Decisión:** Eliminar solapas estáticas de texto de la UI, proveer ingesta masiva CSV con exportación de reportes, calibrador de sensibilidad y registro de actividad profesional. **Alternativa descartada:** Mantener pestañas numeradas y textos teóricos en el frontend que degradan la experiencia de producto real. |
 
 ---
 
