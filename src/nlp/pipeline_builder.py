@@ -7,6 +7,7 @@ permitiendo que el pipeline serializado en .joblib reciba directamente cadenas
 de texto crudo tanto en entrenamiento como en inferencia de producción.
 """
 
+from pathlib import Path
 from typing import Any, Literal, Optional, Union
 import numpy as np
 from sklearn.dummy import DummyClassifier
@@ -15,9 +16,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 
+from src.nlp.normalizer import normalize_text
+from src.nlp.stopwords_es import filter_stopwords
 from src.nlp.tokenizer import (
     inspect_nlp_pipeline,
     preprocess_text,
+    stem_tokens,
+    tokenize_text,
 )
 
 
@@ -120,4 +125,80 @@ def inspect_pipeline_prediction(
         "prediction": str(predicted_label),
         "probabilities": probabilities,
     }
+
+
+def explain_text(
+    text: str,
+    pipeline: Optional[Pipeline] = None,
+    top_n: int = 5,
+) -> dict[str, Any]:
+    """Desglosa las transformaciones intermedias de NLP y extrae las top características TF-IDF.
+    
+    Captura de forma secuencial los 5 estados intermedios del procesamiento de texto:
+    1. original: Texto crudo recibido.
+    2. normalized: Texto tras regex y enmascaramiento con tokens sintéticos.
+    3. tokens: Lista de unidades léxicas tokenizadas boundary-safe.
+    4. no_stopwords: Tokens tras depuración de stopwords preservando whitelist.
+    5. stemmed_or_lemmatized: Tokens morfológicamente reducidos con Snowball stemming.
+    
+    Adicionalmente extrae las top_n características con mayor peso numérico en el
+    vector TF-IDF sublineal para el mensaje evaluado.
+    
+    Parámetros:
+        text: Cadena de texto a procesar.
+        pipeline: Instancia opcional de scikit-learn Pipeline (o TfidfVectorizer).
+        top_n: Cantidad máxima de términos TF-IDF destacados a extraer (por defecto 5).
+        
+    Retorna:
+        Diccionario con las claves 'original', 'normalized', 'tokens', 'no_stopwords',
+        'stemmed_or_lemmatized' y 'tfidf_top_features'.
+    """
+    raw_text = text if isinstance(text, str) else ""
+    normalized = normalize_text(raw_text)
+    tokens = tokenize_text(normalized)
+    no_stopwords = filter_stopwords(tokens)
+    stemmed_or_lemmatized = stem_tokens(no_stopwords)
+
+    vectorizer = None
+    if pipeline is not None:
+        if isinstance(pipeline, Pipeline):
+            vectorizer = pipeline.named_steps.get("tfidf")
+        elif hasattr(pipeline, "transform"):
+            vectorizer = pipeline
+    else:
+        # Intentar cargar pipeline entrenado por defecto si existe en disco
+        default_model_path = Path("models/spam_detector_pipeline.joblib")
+        if default_model_path.exists():
+            try:
+                import joblib
+                loaded_model = joblib.load(default_model_path)
+                if isinstance(loaded_model, Pipeline):
+                    vectorizer = loaded_model.named_steps.get("tfidf")
+            except Exception:
+                vectorizer = None
+
+    tfidf_top_features: list[dict[str, Any]] = []
+    if vectorizer is not None and hasattr(vectorizer, "transform") and raw_text.strip():
+        try:
+            tfidf_vec = vectorizer.transform([raw_text])
+            feature_names = vectorizer.get_feature_names_out()
+            coo = tfidf_vec.tocoo()
+            sorted_feats = sorted(zip(coo.col, coo.data), key=lambda x: x[1], reverse=True)
+            for col, val in sorted_feats[:top_n]:
+                tfidf_top_features.append({
+                    "feature": str(feature_names[col]),
+                    "weight": round(float(val), 4),
+                })
+        except Exception:
+            tfidf_top_features = []
+
+    return {
+        "original": raw_text,
+        "normalized": normalized,
+        "tokens": tokens,
+        "no_stopwords": no_stopwords,
+        "stemmed_or_lemmatized": stemmed_or_lemmatized,
+        "tfidf_top_features": tfidf_top_features,
+    }
+
 

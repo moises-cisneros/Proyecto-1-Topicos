@@ -39,11 +39,13 @@ from api.schemas import (
     MessageAuditRecord,
     MessageInput,
     MetricsResponse,
+    NLPDebugResponse,
     PredictionResponse,
+    TFIDFFeatureWeight,
 )
 from src.nlp.normalizer import normalize_text
 # Importar preprocess_for_pipeline para deserialización correcta de joblib
-from src.nlp.pipeline_builder import preprocess_for_pipeline  # noqa: F401
+from src.nlp.pipeline_builder import explain_text, preprocess_for_pipeline  # noqa: F401
 
 logger = logging.getLogger("sms_sentinel.api")
 
@@ -183,6 +185,7 @@ async def root():
         "health_url": "/health",
         "metrics_url": "/metrics",
         "history_url": "/history",
+        "nlp_debug_url": "/nlp/debug",
     }
 
 
@@ -439,6 +442,35 @@ async def predict_batch_csv(
         total_latency_ms=total_latency_ms,
         predictions=predictions,
     )
+
+
+@app.post(
+    "/nlp/debug",
+    response_model=NLPDebugResponse,
+    summary="Depurar y explicar el desglose paso a paso de transformaciones de NLP",
+    status_code=status.HTTP_200_OK,
+)
+async def debug_nlp_pipeline(message: MessageInput):
+    """Retorna la traza secuencial de las 5 fases de transformación y top características TF-IDF.
+    
+    Permite auditar paso a paso cómo el mensaje crudo fue transformado por cada capa:
+    1. original: Texto crudo sin alteraciones.
+    2. normalized: Sustitución de URLs, teléfonos y números por tokens sintéticos.
+    3. tokens: Extracción boundary-safe de palabras.
+    4. no_stopwords: Depuración de stop words respetando la whitelist contextual.
+    5. stemmed_or_lemmatized: Reducción morfológica con Snowball stemming.
+    6. tfidf_top_features: Las 5 características con mayor peso TF-IDF en el vector.
+    """
+    pipeline = getattr(app.state, "pipeline", None)
+    if pipeline is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="El modelo de clasificación de SMS no está disponible en memoria.",
+        )
+
+    explanation = explain_text(message.text, pipeline=pipeline, top_n=5)
+    return explanation
+
 
 
 @app.get(
