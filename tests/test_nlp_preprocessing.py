@@ -6,7 +6,7 @@ whitelist en stop words, tokenización boundary-safe, stemming en español y tra
 
 import pytest
 
-from src.nlp.normalizer import (
+from pipeline.nlp.normalizer import (
     SYNTHETIC_TOKENS,
     TOKEN_NUM,
     TOKEN_TEL,
@@ -17,15 +17,16 @@ from src.nlp.normalizer import (
     mask_urls,
     normalize_text,
 )
-from src.nlp.stopwords_es import (
+from pipeline.nlp.stopwords_es import (
     DEFAULT_WHITELIST,
     NEGATION_WHITELIST,
     URGENCY_WHITELIST,
     filter_stopwords,
     get_spanish_stopwords,
 )
-from src.nlp.tokenizer import (
+from pipeline.nlp.tokenizer import (
     inspect_nlp_pipeline,
+    lemmatize_tokens,
     preprocess_text,
     stem_tokens,
     tokenize_text,
@@ -235,3 +236,31 @@ def test_preprocess_text_full_cycle() -> None:
     assert TOKEN_URL in processed
     assert "ahor" in processed or "ahora" in processed  # 'ahora' preservada en whitelist
     assert "llamando" not in processed  # fue reducida a raíz 'llam'
+
+
+def test_lemmatization_preserves_synthetic_tokens() -> None:
+    """Verifica que la lematización canónica reduzca a lemas y preserve tokens sintéticos."""
+    tokens = ["bloqueada", "cuentas", "ganadores", "llamadas", TOKEN_URL, TOKEN_TEL, TOKEN_NUM]
+    lemmas = lemmatize_tokens(tokens)
+
+    # Tokens sintéticos preservados
+    assert TOKEN_URL in lemmas
+    assert TOKEN_TEL in lemmas
+    assert TOKEN_NUM in lemmas
+
+    # Lematización léxica
+    assert "bloquear" in lemmas
+    assert "cuenta" in lemmas
+    assert "ganar" in lemmas
+    assert "llamar" in lemmas
+
+
+def test_preprocess_text_lemmatization_cycle() -> None:
+    """Verifica el preprocesamiento completo con estrategia de lematización."""
+    raw = "Su tarjeta bancaria ha sido bloqueada. Ingrese a https://seguridad.es ya."
+    lemmatized = preprocess_text(raw, morphology="lemmatization")
+
+    assert TOKEN_URL in lemmatized
+    assert "bloquear" in lemmatized
+    assert "tarjeta" in lemmatized
+    assert "ingresar" in lemmatized

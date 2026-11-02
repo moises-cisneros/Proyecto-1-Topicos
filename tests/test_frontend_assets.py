@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import pytest
 
-WEB_DIR = Path(__file__).resolve().parent.parent / "web"
+WEB_DIR = Path(__file__).resolve().parent.parent / "packages" / "web"
 
 
 def test_web_package_structure():
@@ -116,3 +116,36 @@ def test_compiled_dist_artifacts():
     css_files = list(assets_dir.glob("*.css"))
     assert len(js_files) > 0, "Debe existir al menos un bundle JS generado"
     assert len(css_files) > 0, "Debe existir al menos un bundle CSS generado"
+
+
+def test_example_resources_and_no_hardcoded_samples():
+    """Verifica que los ejemplos residan en resources/example/ y no haya samples hardcodeados en frontend."""
+    project_root = Path(__file__).resolve().parent.parent
+    example_dir = project_root / "resources" / "example"
+    assert example_dir.exists(), "resources/example debe existir"
+
+    samples_json = example_dir / "samples.json"
+    batch_csv = example_dir / "batch_samples.csv"
+    assert samples_json.exists(), "resources/example/samples.json debe existir"
+    assert batch_csv.exists(), "resources/example/batch_samples.csv debe existir"
+
+    with open(samples_json, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    assert "samples" in data and len(data["samples"]) > 0
+    assert "default_forensic_sample" in data
+
+    csv_text = batch_csv.read_text(encoding="utf-8")
+    assert "text\n" in csv_text or "text\r\n" in csv_text
+    assert len(csv_text.splitlines()) > 5
+
+    # Validar que los componentes no tengan constantes hardcodeadas de strings de muestra
+    batch_analyzer_file = WEB_DIR / "src" / "components" / "BatchAnalyzer.tsx"
+    nlp_viewer_file = WEB_DIR / "src" / "components" / "NLPStepViewer.tsx"
+
+    batch_code = batch_analyzer_file.read_text(encoding="utf-8")
+    assert "const SAMPLE_CSV_CONTENT" not in batch_code
+    assert "@resources/example/batch_samples.csv" in batch_code
+
+    nlp_code = nlp_viewer_file.read_text(encoding="utf-8")
+    assert "const DEFAULT_SAMPLE =\n  'ALERTA BANCO" not in nlp_code
+    assert "@resources/example/samples.json" in nlp_code

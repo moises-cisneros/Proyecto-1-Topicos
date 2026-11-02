@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from api.main import app
-from src.nlp.pipeline_builder import explain_text
+from pipeline.nlp.pipeline_builder import explain_text
 
 
 @pytest.fixture(scope="module")

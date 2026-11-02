@@ -12,12 +12,12 @@ import numpy as np
 import pytest
 from sklearn.pipeline import Pipeline
 
-from src.models.evaluate import (
+from pipeline.models.evaluate import (
     evaluate_model,
     format_metrics_table,
     perform_qualitative_error_analysis,
 )
-from src.nlp.pipeline_builder import (
+from pipeline.nlp.pipeline_builder import (
     build_sms_pipeline,
     inspect_pipeline_prediction,
     preprocess_for_pipeline,

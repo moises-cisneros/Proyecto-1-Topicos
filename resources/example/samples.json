@@ -1,0 +1,61 @@
+{
+  "default_forensic_sample": "ALERTA BANCO: Transferencia no autorizada de $4,500 en curso. Ingrese a https://bit.ly/banco o llame al 800-449922 urgente.",
+  "samples": [
+    {
+      "id": "ham-01",
+      "type": "ham",
+      "label": "Legítimo - Coordinación de Trabajo",
+      "category": "personal",
+      "text": "Hola Carlos, te paso el resumen de la reunión de hoy. Mañana seguimos con la revisión del informe técnico a las 10:00."
+    },
+    {
+      "id": "ham-02",
+      "type": "ham",
+      "label": "Legítimo - Recordatorio de Cita Médica",
+      "category": "notificacion",
+      "text": "Estimado paciente, le recordamos su consulta odontológica para el día jueves 5 de noviembre a las 15:30. Responda SI para confirmar."
+    },
+    {
+      "id": "ham-03",
+      "type": "ham",
+      "label": "Legítimo - Entrega de Pedido",
+      "category": "logistica",
+      "text": "Tu paquete con número de guía 49201 está en camino. El repartidor llegará a tu domicilio hoy entre 14:00 y 18:00 hrs."
+    },
+    {
+      "id": "ham-04",
+      "type": "ham",
+      "label": "Legítimo - Código de Seguridad 2FA",
+      "category": "seguridad",
+      "text": "Tu código de verificación para iniciar sesión en el portal es 849201. Válido por 5 minutos. No lo compartas con nadie."
+    },
+    {
+      "id": "spam-01",
+      "type": "spam",
+      "label": "Amenaza - Phishing Bancario Urgente",
+      "category": "smishing",
+      "text": "ALERTA BANCO: Transferencia no autorizada de $4,500 en curso. Ingrese a https://bit.ly/banco-urgente o llame al 800-449922 para cancelar de inmediato."
+    },
+    {
+      "id": "spam-02",
+      "type": "spam",
+      "label": "Amenaza - Paquetería Falsa con Enlace",
+      "category": "smishing",
+      "text": "CORREOS: Su envío no pudo ser entregado debido a aranceles pendientes de $3.50. Actualice sus datos de entrega aquí: https://tinyurl.com/entrega-sms"
+    },
+    {
+      "id": "spam-03",
+      "type": "spam",
+      "label": "Amenaza - Cuenta Suspendida / Robo de Credenciales",
+      "category": "smishing",
+      "text": "SEGURIDAD BANCARIA: Su cuenta ha sido bloqueada temporalmente por actividad inusual. Valide su identidad ahora en https://banco-seguro-login.net/verificar"
+    },
+    {
+      "id": "spam-04",
+      "type": "spam",
+      "label": "Amenaza - Premio Falso / Estafa Telefónica",
+      "category": "scam",
+      "text": "¡FELICIDADES! Fuiste seleccionado como ganador de un bono de $50,000 en efectivo. Reclama tu premio llamando YA al 900-112233. Cupos limitados."
+    }
+  ]
+}

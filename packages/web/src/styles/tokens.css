@@ -1,0 +1,87 @@
+/* ==========================================================================
+   SMS SENTINEL - DESIGN SYSTEM TOKENS (DESIGN.md)
+   Paleta canónica oficial: https://coolors.co/2b2d42-8d99ae-edf2f4-ef233c-4361ee
+   Regla estricta: Cero degradados, cero animaciones, contraste WCAG 2.1 AA.
+   ========================================================================== */
+
+:root {
+  /* Paleta Canónica Hexadecimal */
+  --palette-space-cadet: #2b2d42;
+  --palette-cool-gray: #8d99ae;
+  --palette-antiflash-white: #edf2f4;
+  --palette-red-pantone: #ef233c;
+  --palette-tech-blue: #4361ee;
+  --palette-tech-blue-hover: #3751d8;
+
+  /* Modo Oscuro (Predeterminado) */
+  --surface-canvas: #1e2030;
+  --surface-card: #2b2d42;
+  --surface-subtle: #232537;
+
+  --border-subtle: rgba(141, 153, 174, 0.3);
+  --border-prominent: #8d99ae;
+
+  --text-primary: #edf2f4;
+  --text-secondary: #8d99ae;
+  --text-muted: #6b778c;
+
+  /* Brand Action CTA */
+  --brand-primary: #4361ee;
+  --brand-primary-hover: #3751d8;
+  --brand-danger: #ef233c;
+  --brand-dark: #2b2d42;
+  --brand-gray: #8d99ae;
+  --brand-light: #edf2f4;
+
+  /* Estados Semánticos (Threat Forensics) */
+  --status-danger-bg: #3a1017;
+  --status-danger-border: #ef233c;
+  --status-danger-text: #ef233c;
+
+  --status-safe-bg: #1c2e28;
+  --status-safe-border: #8d99ae;
+  --status-safe-text: #a8dadc;
+
+  --status-warning-bg: #2d2415;
+  --status-warning-border: #f4a261;
+  --status-warning-text: #f4a261;
+
+  /* Tipografías */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+html.light,
+body.theme-light {
+  /* Modo Claro */
+  --surface-canvas: #edf2f4;
+  --surface-card: #ffffff;
+  --surface-subtle: #f4f7f8;
+
+  --border-subtle: rgba(141, 153, 174, 0.4);
+  --border-prominent: #8d99ae;
+
+  --text-primary: #2b2d42;
+  --text-secondary: #576275;
+  --text-muted: #8d99ae;
+
+  --status-danger-bg: #ffebee;
+  --status-danger-border: #ef233c;
+  --status-danger-text: #ef233c;
+
+  --status-safe-bg: #e8f0fe;
+  --status-safe-border: #8d99ae;
+  --status-safe-text: #2b2d42;
+
+  --status-warning-bg: #fff3e0;
+  --status-warning-border: #f4a261;
+  --status-warning-text: #b25e00;
+}
+
+/* Regla arquitectónica inmutable de DESIGN.md: CERO animaciones ni transiciones */
+*,
+*::before,
+*::after {
+  transition: none !important;
+  animation: none !important;
+}

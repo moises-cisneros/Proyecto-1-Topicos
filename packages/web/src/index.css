@@ -1,0 +1,91 @@
+@import './styles/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Regla arquitectónica inmutable de DESIGN.md: CERO animaciones ni transiciones */
+*,
+*::before,
+*::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+body {
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Clases de Superficies Semánticas (Design Tokens) */
+.app-canvas {
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+}
+
+.app-card {
+  background-color: var(--surface-card);
+  border-color: var(--border-subtle);
+}
+
+.app-card-subtle {
+  background-color: var(--surface-subtle);
+  border-color: var(--border-subtle);
+}
+
+.app-border {
+  border-color: var(--border-subtle);
+}
+
+.app-border-prominent {
+  border-color: var(--border-prominent);
+}
+
+.app-text-primary {
+  color: var(--text-primary);
+}
+
+.app-text-secondary {
+  color: var(--text-secondary);
+}
+
+.app-text-muted {
+  color: var(--text-muted);
+}
+
+/* Botón CTA Primario */
+.btn-cta {
+  background-color: var(--brand-primary);
+  color: #ffffff;
+  border: 1px solid var(--brand-primary);
+}
+
+.btn-cta:hover:not(:disabled) {
+  background-color: var(--brand-primary-hover);
+}
+
+/* Badges Semánticos de Amenaza */
+.badge-phishing {
+  background-color: var(--status-danger-bg);
+  color: var(--status-danger-text);
+  border: 1px solid var(--status-danger-border);
+}
+
+.badge-legit {
+  background-color: var(--status-safe-bg);
+  color: var(--status-safe-text);
+  border: 1px solid var(--status-safe-border);
+}
+
+.badge-warning {
+  background-color: var(--status-warning-bg);
+  color: var(--status-warning-text);
+  border: 1px solid var(--status-warning-border);
+}
