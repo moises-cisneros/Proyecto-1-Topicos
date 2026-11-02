@@ -1,15 +1,17 @@
 """SMS Sentinel - Microservicio REST API con FastAPI.
 
 Expone endpoints para:
-- Inferencia individual (POST /predict)
+- Inferencia individual con persistencia de auditoría (POST /predict)
 - Inferencia por lotes (POST /predict/batch y POST /predict/batch/csv)
 - Consulta de métricas del modelo (GET /metrics)
-- Estado de salud y diagnóstico (GET /health)
+- Historial de auditoría paginado en PostgreSQL (GET /history)
+- Estado de salud y diagnóstico de modelo y base de datos (GET /health)
 - Documentación interactiva Swagger/OpenAPI (GET /docs)
 """
 
 import io
 import json
+import logging
 import os
 import re
 import time
@@ -20,15 +22,21 @@ from typing import Any, Optional
 
 import joblib
 import pandas as pd
-from fastapi import FastAPI, File, HTTPException, UploadFile, status
+from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from sklearn.pipeline import Pipeline
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
+from api.database import check_db_connection, get_db, init_db
+from api.models_db import MessageAudit
 from api.schemas import (
     BatchInput,
     BatchResponse,
     BatchSummary,
     HealthResponse,
+    HistoryResponse,
+    MessageAuditRecord,
     MessageInput,
     MetricsResponse,
     PredictionResponse,
@@ -37,6 +45,7 @@ from src.nlp.normalizer import normalize_text
 # Importar preprocess_for_pipeline para deserialización correcta de joblib
 from src.nlp.pipeline_builder import preprocess_for_pipeline  # noqa: F401
 
+logger = logging.getLogger("sms_sentinel.api")
 
 # Rutas de artefactos por defecto o configuradas vía variables de entorno
 DEFAULT_MODEL_PATH = Path(os.getenv("MODEL_PATH", "models/spam_detector_pipeline.joblib"))
@@ -106,7 +115,7 @@ def run_single_inference(pipeline: Pipeline, text: str) -> PredictionResponse:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Ciclo de vida de la aplicación: carga artefactos en memoria al iniciar."""
+    """Ciclo de vida de la aplicación: carga artefactos en memoria e inicializa esquema de BD."""
     model_file = resolve_path(DEFAULT_MODEL_PATH)
     metrics_file = resolve_path(DEFAULT_METRICS_PATH)
     
@@ -133,6 +142,9 @@ async def lifespan(app: FastAPI):
     else:
         app.state.metrics = None
 
+    # 3. Inicializar esquema de base de datos de forma segura
+    init_db()
+
     yield
     
     # Limpieza al apagar la aplicación
@@ -144,7 +156,7 @@ app = FastAPI(
     title="SMS Sentinel API",
     description=(
         "Microservicio REST de alta velocidad para detección de Spam y Phishing en SMS "
-        "en español utilizando NLP y Machine Learning."
+        "en español utilizando NLP, Machine Learning y persistencia de auditoría en PostgreSQL."
     ),
     version="1.0.0",
     lifespan=lifespan,
@@ -170,19 +182,21 @@ async def root():
         "docs_url": "/docs",
         "health_url": "/health",
         "metrics_url": "/metrics",
+        "history_url": "/history",
     }
 
 
 @app.get(
     "/health",
     response_model=HealthResponse,
-    summary="Verificar estado de salud y disponibilidad del modelo",
+    summary="Verificar estado de salud y disponibilidad del modelo y base de datos",
 )
 async def health_check():
-    """Retorna el estado de operatividad de la API, modelo cargado y marca de tiempo."""
+    """Retorna el estado de operatividad de la API, modelo cargado, estado de BD y marca de tiempo."""
     pipeline_loaded = getattr(app.state, "pipeline", None) is not None
     model_name = getattr(app.state, "model_name", "None")
-    current_status = "UP" if pipeline_loaded else "DEGRADED"
+    db_connected = check_db_connection()
+    current_status = "UP" if pipeline_loaded else "DOWN"
 
     return HealthResponse(
         status=current_status,
@@ -190,16 +204,20 @@ async def health_check():
         model_name=model_name,
         version="1.0.0",
         timestamp=datetime.now(timezone.utc).isoformat(),
+        database_connected=db_connected,
     )
 
 
 @app.post(
     "/predict",
     response_model=PredictionResponse,
-    summary="Clasificar un mensaje SMS individual",
+    summary="Clasificar un mensaje SMS individual y auditar",
     status_code=status.HTTP_200_OK,
 )
-async def predict_single(message: MessageInput):
+async def predict_single(
+    message: MessageInput,
+    db: Optional[Session] = Depends(get_db),
+):
     """Clasifica un mensaje SMS individual devolviendo etiqueta, probabilidades y riesgo."""
     pipeline = getattr(app.state, "pipeline", None)
     if pipeline is None:
@@ -208,7 +226,27 @@ async def predict_single(message: MessageInput):
             detail="El modelo de clasificación de SMS no está disponible en memoria.",
         )
 
-    return run_single_inference(pipeline, message.text)
+    pred = run_single_inference(pipeline, message.text)
+
+    # Persistencia en base de datos con degradación elegante ante fallo o desconexión
+    if db is not None:
+        try:
+            audit = MessageAudit(
+                message_text=message.text,
+                prediction=pred.label,
+                probability_spam=pred.spam_probability,
+                probability_ham=pred.ham_probability,
+                risk_level=pred.risk_level,
+                detected_tokens=pred.detected_tokens,
+                latency_ms=pred.latency_ms,
+            )
+            db.add(audit)
+            db.commit()
+        except Exception as exc:
+            db.rollback()
+            logger.warning("Fallo al persistir registro de auditoría: %s", exc)
+
+    return pred
 
 
 @app.post(
@@ -217,7 +255,10 @@ async def predict_single(message: MessageInput):
     summary="Clasificar un lote de mensajes SMS vía JSON",
     status_code=status.HTTP_200_OK,
 )
-async def predict_batch_json(batch: BatchInput):
+async def predict_batch_json(
+    batch: BatchInput,
+    db: Optional[Session] = Depends(get_db),
+):
     """Clasifica una colección de mensajes SMS enviados en formato JSON."""
     pipeline = getattr(app.state, "pipeline", None)
     if pipeline is None:
@@ -244,6 +285,27 @@ async def predict_batch_json(batch: BatchInput):
     avg_latency = round(total_latency_ms / total, 3) if total > 0 else 0.0
     spam_pct = round((spam_count / total) * 100, 2) if total > 0 else 0.0
 
+    # Persistencia de auditoría para el lote procesado
+    if db is not None and predictions:
+        try:
+            audit_objects = [
+                MessageAudit(
+                    message_text=msg.text,
+                    prediction=p.label,
+                    probability_spam=p.spam_probability,
+                    probability_ham=p.ham_probability,
+                    risk_level=p.risk_level,
+                    detected_tokens=p.detected_tokens,
+                    latency_ms=p.latency_ms,
+                )
+                for msg, p in zip(batch.messages, predictions)
+            ]
+            db.add_all(audit_objects)
+            db.commit()
+        except Exception as exc:
+            db.rollback()
+            logger.warning("Fallo al persistir lote en base de datos: %s", exc)
+
     return BatchResponse(
         summary=BatchSummary(
             total=total,
@@ -263,7 +325,10 @@ async def predict_batch_json(batch: BatchInput):
     summary="Clasificar un lote de mensajes SMS vía archivo CSV",
     status_code=status.HTTP_200_OK,
 )
-async def predict_batch_csv(file: UploadFile = File(...)):
+async def predict_batch_csv(
+    file: UploadFile = File(...),
+    db: Optional[Session] = Depends(get_db),
+):
     """Procesa y clasifica un archivo CSV que contiene mensajes SMS."""
     pipeline = getattr(app.state, "pipeline", None)
     if pipeline is None:
@@ -315,6 +380,7 @@ async def predict_batch_csv(file: UploadFile = File(...)):
 
     t_start = time.perf_counter()
     predictions: list[PredictionResponse] = []
+    valid_texts: list[str] = []
     spam_count = 0
     ham_count = 0
 
@@ -324,6 +390,7 @@ async def predict_batch_csv(file: UploadFile = File(...)):
             continue
         pred = run_single_inference(pipeline, clean_text)
         predictions.append(pred)
+        valid_texts.append(clean_text)
         if pred.label == "spam":
             spam_count += 1
         else:
@@ -340,6 +407,27 @@ async def predict_batch_csv(file: UploadFile = File(...)):
     avg_latency = round(total_latency_ms / total, 3) if total > 0 else 0.0
     spam_pct = round((spam_count / total) * 100, 2) if total > 0 else 0.0
 
+    # Persistencia de auditoría para el lote CSV
+    if db is not None and predictions:
+        try:
+            audit_objects = [
+                MessageAudit(
+                    message_text=raw_text,
+                    prediction=p.label,
+                    probability_spam=p.spam_probability,
+                    probability_ham=p.ham_probability,
+                    risk_level=p.risk_level,
+                    detected_tokens=p.detected_tokens,
+                    latency_ms=p.latency_ms,
+                )
+                for raw_text, p in zip(valid_texts, predictions)
+            ]
+            db.add_all(audit_objects)
+            db.commit()
+        except Exception as exc:
+            db.rollback()
+            logger.warning("Fallo al persistir lote CSV en base de datos: %s", exc)
+
     return BatchResponse(
         summary=BatchSummary(
             total=total,
@@ -351,6 +439,41 @@ async def predict_batch_csv(file: UploadFile = File(...)):
         total_latency_ms=total_latency_ms,
         predictions=predictions,
     )
+
+
+@app.get(
+    "/history",
+    response_model=HistoryResponse,
+    summary="Consultar historial paginado de mensajes evaluados",
+    status_code=status.HTTP_200_OK,
+)
+async def get_history(
+    limit: int = Query(50, ge=1, le=500, description="Cantidad máxima de registros a retornar"),
+    offset: int = Query(0, ge=0, description="Número de registros a omitir (desplazamiento)"),
+    db: Optional[Session] = Depends(get_db),
+):
+    """Retorna el historial paginado de mensajes evaluados ordenados por fecha descendente."""
+    if db is None:
+        return HistoryResponse(total=0, limit=limit, offset=offset, records=[])
+
+    try:
+        total = db.query(func.count(MessageAudit.id)).scalar() or 0
+        records = (
+            db.query(MessageAudit)
+            .order_by(MessageAudit.created_at.desc(), MessageAudit.id.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+        return HistoryResponse(
+            total=total,
+            limit=limit,
+            offset=offset,
+            records=records,
+        )
+    except Exception as exc:
+        logger.warning("Fallo al consultar historial en base de datos: %s", exc)
+        return HistoryResponse(total=0, limit=limit, offset=offset, records=[])
 
 
 @app.get(
