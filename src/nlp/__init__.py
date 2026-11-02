@@ -8,6 +8,13 @@ from src.nlp.normalizer import (
     mask_entities,
     normalize_text,
 )
+from src.nlp.stopwords_es import (
+    DEFAULT_WHITELIST,
+    NEGATION_WHITELIST,
+    URGENCY_WHITELIST,
+    filter_stopwords,
+    get_spanish_stopwords,
+)
 
 __all__ = [
     "TOKEN_URL",
@@ -16,4 +23,9 @@ __all__ = [
     "SYNTHETIC_TOKENS",
     "mask_entities",
     "normalize_text",
+    "NEGATION_WHITELIST",
+    "URGENCY_WHITELIST",
+    "DEFAULT_WHITELIST",
+    "get_spanish_stopwords",
+    "filter_stopwords",
 ]
