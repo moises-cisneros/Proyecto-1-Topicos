@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { HistoryResponse, MessageAuditRecord, getHistory } from '../services/api';
-import { ChevronLeft, ChevronRight, Clock, Database, Eye, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Eye, RefreshCw } from 'lucide-react';
 
 interface HistoryAuditTableProps {
   onSelectMessage?: (text: string) => void;
@@ -21,7 +21,7 @@ export const HistoryAuditTable: React.FC<HistoryAuditTableProps> = ({ onSelectMe
       setHistoryData(data);
     } catch {
       setError(
-        'No se pudo conectar con la base de datos PostgreSQL (puerto 5439) o el endpoint /history.'
+        'No se pudo sincronizar el registro de actividad desde el servidor.'
       );
     } finally {
       setLoading(false);
@@ -53,15 +53,15 @@ export const HistoryAuditTable: React.FC<HistoryAuditTableProps> = ({ onSelectMe
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold app-text-primary">
-              Registro de Auditoría Persistente (PostgreSQL)
+              Registro de Actividad y Amenazas
             </h2>
             <span className="bg-[#232537] border border-[#8d99ae] text-xs font-mono px-2 py-0.5 rounded text-[#a8dadc] flex items-center gap-1">
-              <Database className="w-3.5 h-3.5 text-[#4361ee]" />
-              Puerto 5439
+              <Clock className="w-3.5 h-3.5 text-[#4361ee]" />
+              Tiempo Real
             </span>
           </div>
           <p className="text-xs app-text-secondary mt-1">
-            Historial inmutable de clasificaciones realizadas y tiempos de inferencia.
+            Trazabilidad inmutable de clasificaciones realizadas, niveles de riesgo y tiempos de respuesta.
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export const HistoryAuditTable: React.FC<HistoryAuditTableProps> = ({ onSelectMe
         {loading ? (
           <div className="p-8 text-center text-xs font-mono app-text-muted flex items-center justify-center gap-2">
             <RefreshCw className="w-4 h-4" />
-            Consultando registros en base de datos...
+            Cargando historial de eventos...
           </div>
         ) : error ? (
           <div className="p-6 text-xs font-mono text-[#ef233c] bg-[#3a1017] border-b border-[#ef233c] flex items-center justify-between">

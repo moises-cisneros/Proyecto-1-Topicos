@@ -65,6 +65,7 @@ def test_required_components_exist():
 
     required_components = [
         "MessageAnalyzer.tsx",
+        "BatchAnalyzer.tsx",
         "NLPStepViewer.tsx",
         "MetricsDashboard.tsx",
         "HistoryAuditTable.tsx",
@@ -81,6 +82,7 @@ def test_api_service_contract_endpoints():
 
     content = api_service_file.read_text(encoding="utf-8")
     assert "/predict" in content
+    assert "/predict/batch/csv" in content
     assert "/nlp/debug" in content
     assert "/metrics" in content
     assert "/history" in content

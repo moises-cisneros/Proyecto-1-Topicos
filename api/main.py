@@ -112,6 +112,7 @@ def run_single_inference(pipeline: Pipeline, text: str) -> PredictionResponse:
         risk_level=risk_level,
         latency_ms=latency_ms,
         detected_tokens=detected_tokens,
+        text=text,
     )
 
 

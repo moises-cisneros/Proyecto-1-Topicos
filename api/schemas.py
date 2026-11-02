@@ -74,6 +74,11 @@ class PredictionResponse(BaseModel):
         description="Tokens sintéticos o palabras clave detectadas durante la normalización",
         examples=[["TOKEN_URL", "TOKEN_TEL"]]
     )
+    text: Optional[str] = Field(
+        default=None,
+        description="Texto original del mensaje evaluado (incluido en lote)",
+        examples=["URGENTE: Ingrese a http://banco.com"]
+    )
 
 
 class BatchInput(BaseModel):

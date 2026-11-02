@@ -116,6 +116,8 @@ def test_batch_predict_json(client: TestClient):
     assert summary["ham_count"] >= 1
     assert summary["total"] == summary["spam_count"] + summary["ham_count"]
     assert len(data["predictions"]) == 3
+    assert data["predictions"][0]["text"] == "Nos vemos en la facultad mañana para estudiar."
+    assert data["predictions"][1]["text"] == "GANA 5000 EUROS YA! Haz clic en http://premio-facil.es ahora."
     assert data["total_latency_ms"] > 0
 
 
@@ -141,6 +143,8 @@ def test_batch_predict_csv_upload(client: TestClient):
     assert data["summary"]["spam_count"] >= 1
     assert data["summary"]["ham_count"] >= 1
     assert len(data["predictions"]) == 3
+    assert data["predictions"][0]["text"] == "Hola amigo cómo estás"
+    assert data["predictions"][1]["text"] == "Premio exclusivo de 1000 dólares en http://ganadores.com reclama ya"
 
 
 def test_batch_predict_csv_invalid_extension_422(client: TestClient):

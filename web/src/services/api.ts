@@ -18,6 +18,21 @@ export interface PredictionResponse {
   risk_level: 'BAJO' | 'MEDIO' | 'CRÍTICO';
   latency_ms: number;
   detected_tokens: string[];
+  text?: string;
+}
+
+export interface BatchSummary {
+  total: number;
+  spam_count: number;
+  ham_count: number;
+  spam_percentage: number;
+  avg_latency_ms: number;
+}
+
+export interface BatchResponse {
+  summary: BatchSummary;
+  total_latency_ms: number;
+  predictions: PredictionResponse[];
 }
 
 export interface TFIDFFeatureWeight {
@@ -118,6 +133,23 @@ export const checkHealth = async (): Promise<HealthResponse> => {
 
 export const predictMessage = async (text: string): Promise<PredictionResponse> => {
   const { data } = await apiClient.post<PredictionResponse>('/predict', { text });
+  return data;
+};
+
+export const predictBatchCsv = async (file: File): Promise<BatchResponse> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await apiClient.post<BatchResponse>('/predict/batch/csv', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data;
+};
+
+export const predictBatchJson = async (messages: string[]): Promise<BatchResponse> => {
+  const payload = { messages: messages.map((text) => ({ text })) };
+  const { data } = await apiClient.post<BatchResponse>('/predict/batch', payload);
   return data;
 };
 
