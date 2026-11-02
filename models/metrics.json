@@ -1,0 +1,293 @@
+{
+  "timestamp": "2026-11-02T03:35:43Z",
+  "winner_model": "Logistic Regression (Challenger)",
+  "hyperparameter_tuning": {
+    "best_nb_alpha": 0.1,
+    "best_nb_f1": 0.9613688292560223,
+    "nb_cv_grid": {
+      "0.01": 0.9558,
+      "0.1": 0.9614,
+      "0.5": 0.947,
+      "1.0": 0.9302,
+      "2.0": 0.8902
+    },
+    "best_lr_c": 50.0,
+    "best_lr_f1": 0.963446043453164,
+    "lr_cv_grid": {
+      "0.01": 0.464,
+      "0.1": 0.4871,
+      "1.0": 0.9263,
+      "10.0": 0.9572,
+      "50.0": 0.9634
+    }
+  },
+  "benchmark_summary": [
+    {
+      "model_name": "Baseline (Dummy Most Frequent)",
+      "confusion_matrix": {
+        "tn": 966,
+        "fp": 0,
+        "fn": 149,
+        "tp": 0,
+        "matrix": [
+          [
+            966,
+            0
+          ],
+          [
+            149,
+            0
+          ]
+        ]
+      },
+      "rates": {
+        "false_positive_rate": 0.0,
+        "false_negative_rate": 1.0
+      },
+      "class_metrics": {
+        "ham": {
+          "precision": 0.8664,
+          "recall": 1.0,
+          "f1_score": 0.9284,
+          "support": 966
+        },
+        "spam": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "support": 149
+        }
+      },
+      "aggregate_metrics": {
+        "accuracy": 0.8664,
+        "f1_macro": 0.4642,
+        "f1_weighted": 0.8043
+      },
+      "training_duration_seconds": 10.134
+    },
+    {
+      "model_name": "Multinomial Naive Bayes",
+      "confusion_matrix": {
+        "tn": 964,
+        "fp": 2,
+        "fn": 18,
+        "tp": 131,
+        "matrix": [
+          [
+            964,
+            2
+          ],
+          [
+            18,
+            131
+          ]
+        ]
+      },
+      "rates": {
+        "false_positive_rate": 0.00207,
+        "false_negative_rate": 0.12081
+      },
+      "class_metrics": {
+        "ham": {
+          "precision": 0.9817,
+          "recall": 0.9979,
+          "f1_score": 0.9897,
+          "support": 966
+        },
+        "spam": {
+          "precision": 0.985,
+          "recall": 0.8792,
+          "f1_score": 0.9291,
+          "support": 149
+        }
+      },
+      "aggregate_metrics": {
+        "accuracy": 0.9821,
+        "f1_macro": 0.9594,
+        "f1_weighted": 0.9816
+      },
+      "training_duration_seconds": 11.61
+    },
+    {
+      "model_name": "Logistic Regression (Challenger)",
+      "confusion_matrix": {
+        "tn": 959,
+        "fp": 7,
+        "fn": 8,
+        "tp": 141,
+        "matrix": [
+          [
+            959,
+            7
+          ],
+          [
+            8,
+            141
+          ]
+        ]
+      },
+      "rates": {
+        "false_positive_rate": 0.00725,
+        "false_negative_rate": 0.05369
+      },
+      "class_metrics": {
+        "ham": {
+          "precision": 0.9917,
+          "recall": 0.9928,
+          "f1_score": 0.9922,
+          "support": 966
+        },
+        "spam": {
+          "precision": 0.9527,
+          "recall": 0.9463,
+          "f1_score": 0.9495,
+          "support": 149
+        }
+      },
+      "aggregate_metrics": {
+        "accuracy": 0.9865,
+        "f1_macro": 0.9709,
+        "f1_weighted": 0.9865
+      },
+      "training_duration_seconds": 12.355
+    }
+  ],
+  "winner_metrics": {
+    "model_name": "Logistic Regression (Challenger)",
+    "confusion_matrix": {
+      "tn": 959,
+      "fp": 7,
+      "fn": 8,
+      "tp": 141,
+      "matrix": [
+        [
+          959,
+          7
+        ],
+        [
+          8,
+          141
+        ]
+      ]
+    },
+    "rates": {
+      "false_positive_rate": 0.00725,
+      "false_negative_rate": 0.05369
+    },
+    "class_metrics": {
+      "ham": {
+        "precision": 0.9917,
+        "recall": 0.9928,
+        "f1_score": 0.9922,
+        "support": 966
+      },
+      "spam": {
+        "precision": 0.9527,
+        "recall": 0.9463,
+        "f1_score": 0.9495,
+        "support": 149
+      }
+    },
+    "aggregate_metrics": {
+      "accuracy": 0.9865,
+      "f1_macro": 0.9709,
+      "f1_weighted": 0.9865
+    },
+    "training_duration_seconds": 12.355
+  },
+  "qualitative_error_analysis": {
+    "false_positives": [
+      {
+        "sample_index": 101,
+        "text": "Usted está bienvenido... Usted ha sido capturado usando el inglés roto de nuevo...",
+        "true_label": "ham",
+        "predicted_label": "spam",
+        "spam_probability": 0.9332,
+        "diagnosis": "Léxico atípico que colisiona con la distribución frecuencial de términos de spam."
+      },
+      {
+        "sample_index": 170,
+        "text": "CHEERS FOR CALLIN BABE.SOZI CULDNT TALKBUT I WANNATELL U DETAILS Más tarde WENWECAN CHAT PROPERLY X",
+        "true_label": "ham",
+        "predicted_label": "spam",
+        "spam_probability": 0.7523,
+        "diagnosis": "Léxico atípico que colisiona con la distribución frecuencial de términos de spam."
+      },
+      {
+        "sample_index": 347,
+        "text": "MI NO. EN LUTON 0125698789 RING ME IF UR AROUND!",
+        "true_label": "ham",
+        "predicted_label": "spam",
+        "spam_probability": 0.9104,
+        "diagnosis": "Léxico atípico que colisiona con la distribución frecuencial de términos de spam."
+      },
+      {
+        "sample_index": 664,
+        "text": "Bbq este sat en min desde 6ish. Ur bienvenido 2 viene",
+        "true_label": "ham",
+        "predicted_label": "spam",
+        "spam_probability": 0.8163,
+        "diagnosis": "Léxico atípico que colisiona con la distribución frecuencial de términos de spam."
+      },
+      {
+        "sample_index": 796,
+        "text": "El U 2.",
+        "true_label": "ham",
+        "predicted_label": "spam",
+        "spam_probability": 0.5095,
+        "diagnosis": "Mensaje excesivamente breve con escasez de señal contextual (sparsity)."
+      }
+    ],
+    "false_negatives": [
+      {
+        "sample_index": 44,
+        "text": "FreeMsg ¡Hey, hay que ver que ha sido 3 semanas ahora y no hay palabra de vuelta! me gustaría algo divertido para que todavía? Tb ok! XxX std chgs para enviar, £1.50 a rcv",
+        "true_label": "spam",
+        "predicted_label": "ham",
+        "spam_probability": 0.2577,
+        "diagnosis": "Cargas útiles numéricas o códigos únicos sin términos léxicos explícitos de spam."
+      },
+      {
+        "sample_index": 235,
+        "text": "Inicio » Noticias » El baño de la estación de policía fue robado, los policías no tienen nada que hacer!",
+        "true_label": "spam",
+        "predicted_label": "ham",
+        "spam_probability": 0.0007,
+        "diagnosis": "Vocabulario de spam sutil o modismos no capturados en el vocabulario entrenado."
+      },
+      {
+        "sample_index": 362,
+        "text": "Romántico París. 2 noches, 2 vuelos a partir de £79 Reserva ahora 4 el próximo año. llame 08704439680Ts&Cs se aplican.",
+        "true_label": "spam",
+        "predicted_label": "ham",
+        "spam_probability": 0.2888,
+        "diagnosis": "Cargas útiles numéricas o códigos únicos sin términos léxicos explícitos de spam."
+      },
+      {
+        "sample_index": 478,
+        "text": "Para la venta - arsenal dartboard. Buen estado pero sin dobles o trebles!",
+        "true_label": "spam",
+        "predicted_label": "ham",
+        "spam_probability": 0.0005,
+        "diagnosis": "Vocabulario de spam sutil o modismos no capturados en el vocabulario entrenado."
+      },
+      {
+        "sample_index": 606,
+        "text": "Email AlertFrom: Jeri StewartSize: 2KBSubject: Low-cost prescripiton drvgsPara escuchar la llamada de correo electrónico 123",
+        "true_label": "spam",
+        "predicted_label": "ham",
+        "spam_probability": 0.0025,
+        "diagnosis": "Cargas útiles numéricas o códigos únicos sin términos léxicos explícitos de spam."
+      }
+    ],
+    "total_false_positives": 7,
+    "total_false_negatives": 8
+  },
+  "dataset_split": {
+    "train_samples": 4457,
+    "test_samples": 1115,
+    "random_state": 42,
+    "test_ratio": 0.2
+  },
+  "total_execution_time_seconds": 524.4
+}
