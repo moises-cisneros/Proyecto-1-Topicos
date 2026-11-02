@@ -32,7 +32,7 @@ foreach ($doc in $CoreDocs) {
 Write-Host "[OK] Archivos fundamentales de repositorio presentes." -ForegroundColor Green
 
 # 3. Comprobar sintaxis Python en archivos .py (excluyendo entornos virtuales)
-$PythonFiles = Get-ChildItem -Path . -Recurse -Filter *.py -Exclude ".venv","venv","node_modules",".git",".agents"
+$PythonFiles = Get-ChildItem -Path . -Recurse -Filter *.py | Where-Object { $_.FullName -notmatch '[\\/](\.venv|venv|node_modules|\.git|\.agents)[\\/]' }
 if ($PythonFiles.Count -gt 0) {
     Write-Host "==> Verificando sintaxis de $($PythonFiles.Count) archivos Python..." -ForegroundColor Green
     foreach ($file in $PythonFiles) {
