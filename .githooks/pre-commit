@@ -1,0 +1,21 @@
+#!/bin/sh
+# SMS Sentinel - Author Verification Hook
+# Ensures git identity is properly configured before committing.
+
+CURRENT_NAME=$(git config user.name)
+CURRENT_EMAIL=$(git config user.email)
+
+if [ -z "$CURRENT_NAME" ] || [ -z "$CURRENT_EMAIL" ]; then
+    echo "[HOOK ERROR] Falta configurar la identidad de Git (user.name o user.email)." >&2
+    exit 1
+fi
+
+AI_REGEX="([Aa]ntigravity|[Cc]laude|[Cc]ursor|[Cc]opilot|[Gg]emini|[Aa]ssistant|[Aa]gent|[Gg]pt|[Oo]pen[Aa]i|[Aa]nthropic|[Bb]ot)"
+
+if echo "$CURRENT_NAME" | grep -iE "$AI_REGEX" > /dev/null 2>&1 || echo "$CURRENT_EMAIL" | grep -iE "$AI_REGEX" > /dev/null 2>&1; then
+    echo "[HOOK ERROR] No se permiten identidades automaticas de asistentes para autor de commit." >&2
+    exit 1
+fi
+
+exit 0
+

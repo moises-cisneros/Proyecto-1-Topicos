@@ -1,0 +1,50 @@
+# CodeGraph & IDE Agent internal hooks
+/.codegraph
+.agents/scripts/
+.agents/hooks.json
+
+# Internal documentation and prompts (strictly never committed)
+docs/internal/
+
+# OpenSpec local specifications and agent workflows
+openspec/
+.agents/workflows/
+.agents/skills/openspec-*
+**/.openspec-target
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Node & Frontend
+node_modules/
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+web/dist/
+web/build/
+
+# Environments & Secrets
+.env
+.env.local
+
+# Database & Persistent Volumes
+postgres_data/
+
+# OS specific
+.DS_Store
+Thumbs.db

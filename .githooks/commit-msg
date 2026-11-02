@@ -1,0 +1,21 @@
+#!/bin/sh
+# SMS Sentinel - Commit Message Policy Hook
+# Ensures commit messages are clean and free of artificial bot signatures.
+
+MSG_FILE="$1"
+
+if [ ! -f "$MSG_FILE" ]; then
+    exit 0
+fi
+
+AI_REGEX="([Aa]ntigravity|[Cc]laude|[Cc]ursor|[Cc]opilot|[Gg]emini|[Aa]ssistant|[Aa]gent|[Gg]pt|[Oo]pen[Aa]i|[Aa]nthropic|[Dd]eep[Ss]eek|[Qq]wen|[Bb]ot)"
+
+if grep -iE "(co-authored-by:.*$AI_REGEX|signed-off-by:.*$AI_REGEX|generated[- ]by:.*$AI_REGEX)" "$MSG_FILE" > /dev/null 2>&1; then
+    echo "[HOOK] Sanitizando mensaje de commit..." >&2
+    sed -i -E "/[Cc]o-[Aa]uthored-[Bb]y:.*$AI_REGEX/d" "$MSG_FILE"
+    sed -i -E "/[Ss]igned-[Oo]ff-[Bb]y:.*$AI_REGEX/d" "$MSG_FILE"
+    sed -i -E "/[Gg]enerated[- ][Bb]y:.*$AI_REGEX/d" "$MSG_FILE"
+fi
+
+exit 0
+
