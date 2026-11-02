@@ -6,6 +6,10 @@ WORKDIR /app
 # Instalar pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
+# Argumentos de compilación para Vite
+ARG VITE_API_BASE_URL=http://localhost:8090
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 # Copiar manifiestos e instalar dependencias
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile || pnpm install
