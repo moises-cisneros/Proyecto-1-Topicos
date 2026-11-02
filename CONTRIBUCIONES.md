@@ -17,7 +17,7 @@ Este registro documenta la autoría y el dominio técnico en cada una de las cap
 | **Capa 3: Modelado & ML** | `src/models/` (train, evaluate, .joblib) | Implementado | `6b78043`, `1f7f3c3`, `7aa9ded`, `310ecaf`, `d8ee8a8` |
 | **Capa 4: Backend REST API** | `api/` (FastAPI, esquemas Pydantic, PostgreSQL) | Implementado | `282bfcf`, `e15ee52`, `9f7ef4e`, `7533400`, `52a82ba`, `58a8000`, `1ff9285`, `5ceb9a5` |
 | **Capa 5: Frontend UI & Explicabilidad** | `web/` (React, visor NLP, métricas) | Implementado | `c26c2b7`, `ae8766b`, `03d1acc`, `605e4c5` |
-| **Capa 6: DevOps, Testing & CI/CD** | `.github/` | Implementado | Configuración base y CI inicial |
+| **Capa 6: DevOps, Testing & CI/CD** | `.github/`, `docker-compose.yml`, `package.json` | Implementado | `b207cc6`, `bab8996`, `d27ca3a`, `a5b8b73` |
 
 ---
 
@@ -71,6 +71,9 @@ Registro de funcionalidades desarrolladas mediante ramas de trabajo (`feat/*`) e
 | `ae8766b` | `feat/hu07-frontend-ui` | #7 | `feat(web)` | Construir componente `MessageAnalyzer` con formulario de entrada, contador de caracteres/palabras y semáforo visual de riesgo. | **Decisión:** Proporcionar carga rápida de ejemplos legítimos/phishing y tarjeta reactiva con probabilidades y tokens detectados. **Alternativa descartada:** Entrada simple sin telemetría de caracteres ni desglose visual de entidades detectadas. |
 | `03d1acc` | `feat/hu07-frontend-ui` | #7 | `feat(web)` | Implementar componente interactivo `NLPStepViewer` con 6 pestañas de trazabilidad del pipeline consumiendo `/nlp/debug`. | **Decisión:** Exponer didácticamente la transformación en 6 etapas (original, regex, tokens, stopwords, stemming, TF-IDF top features). **Alternativa descartada:** Ocultar el preprocesamiento interno mostrando únicamente la predicción final como caja negra. |
 | `605e4c5` | `feat/hu07-frontend-ui` | #7 | `feat(web)` | Integrar `MetricsDashboard`, `HistoryAuditTable`, vista unificada `App.tsx` y suite de pruebas en `test_frontend_assets.py`. | **Decisión:** Renderizar matriz de confusión 2x2 interactiva, métricas de test holdout, tabla de auditoría con paginación y modo oscuro/claro determinista. **Alternativa descartada:** Vistas estáticas sin interactividad ni sincronización entre el historial y el analizador. |
+| `bab8996` | `feat/hu08-docker-orchestration` | #8 | `feat(docker)` | Configurar `docker-compose.yml` con aislamiento de puertos (`3090`, `8090`, `5439`), red bridge y healthchecks. | **Decisión:** Aislar puertos (3090, 8090, 5439) para garantizar cero colisiones con entornos locales y orquestar dependencias con healthchecks. **Alternativa descartada:** Utilizar puertos por defecto (80, 8000, 5432) propensos a conflictos con servicios existentes en el host. |
+| `d27ca3a` | `feat/hu08-docker-orchestration` | #8 | `chore(pnpm)` | Centralizar scripts globales de ejecución y desarrollo monorepo en `package.json` raíz y `pnpm-workspace.yaml`. | **Decisión:** Unificar comandos operativos (`pnpm dev`, `pnpm ml:train`, `pnpm docker:up`, `pnpm test`) en la raíz del repositorio. **Alternativa descartada:** Obligar a navegar manualmente entre subcarpetas `web/` o `api/` para ejecutar tareas habituales. |
+| `a5b8b73` | `feat/hu08-docker-orchestration` | #8 | `test(reconfig)` | Implementar suite de 7 pruebas de sensibilidad léxica, n-gramas, swapping de clasificadores y reentrenamiento en vivo en `< 2` minutos. | **Decisión:** Incorporar modo `--fast` en `train.py` para permitir ensayos de reentrenamiento y calibración de sensibilidad en segundos. **Alternativa descartada:** Depender únicamente del grid search exhaustivo de 5-Fold CV que bloquea la verificación en vivo por varios minutos. |
 
 ---
 
