@@ -148,3 +148,53 @@ class HistoryResponse(BaseModel):
     limit: int = Field(..., description="Límite de registros solicitados por página")
     offset: int = Field(..., description="Desplazamiento aplicado a la consulta")
     records: list[MessageAuditRecord] = Field(..., description="Lista de registros de auditoría ordenados por fecha descendente")
+
+
+class TFIDFFeatureWeight(BaseModel):
+    """Ponderación numérica de un término o n-grama extraído en el vector TF-IDF."""
+
+    feature: str = Field(
+        ...,
+        description="Palabra, token sintético o n-grama extraído por TF-IDF",
+        examples=["TOKEN_URL"],
+    )
+    weight: float = Field(
+        ...,
+        description="Peso numérico calculado por TfidfVectorizer con sublinear_tf",
+        examples=[0.5842],
+    )
+
+
+class NLPDebugResponse(BaseModel):
+    """Esquema de respuesta para la depuración y explicabilidad paso a paso de NLP."""
+
+    original: str = Field(
+        ...,
+        description="Texto original recibido sin procesar",
+        examples=["URGENTE: Su cuenta ha sido bloqueada. Ingrese a http://banco-alerta.com"],
+    )
+    normalized: str = Field(
+        ...,
+        description="Texto resultante tras normalización de tildes y enmascaramiento regex de entidades",
+        examples=["urgente su cuenta ha sido bloqueada ingrese a TOKEN_URL"],
+    )
+    tokens: list[str] = Field(
+        ...,
+        description="Unidades léxicas tokenizadas respetando fronteras y tokens sintéticos intactos",
+        examples=[["urgente", "su", "cuenta", "ha", "sido", "bloqueada", "ingrese", "a", "TOKEN_URL"]],
+    )
+    no_stopwords: list[str] = Field(
+        ...,
+        description="Tokens depurados tras filtrado de stop words preservando la whitelist contextual",
+        examples=[["urgente", "cuenta", "bloqueada", "ingrese", "TOKEN_URL"]],
+    )
+    stemmed_or_lemmatized: list[str] = Field(
+        ...,
+        description="Tokens tras reducción morfológica (Snowball stemming) sin recortar tokens sintéticos",
+        examples=[["urgent", "cuent", "bloque", "ingres", "TOKEN_URL"]],
+    )
+    tfidf_top_features: list[TFIDFFeatureWeight] = Field(
+        default_factory=list,
+        description="Lista de las palabras o n-gramas con mayor peso TF-IDF en el mensaje",
+    )
+
