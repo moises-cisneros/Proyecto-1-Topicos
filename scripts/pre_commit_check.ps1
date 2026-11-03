@@ -22,7 +22,7 @@ if (-not $GitName -or -not $GitEmail) {
 Write-Host "[OK] Identidad de Git: $GitName <$GitEmail>" -ForegroundColor Green
 
 # 2. Comprobar que los archivos esenciales publicos del repositorio existan
-$CoreDocs = @("README.md", "LICENSE", "CONTRIBUTING.md", "ARCHITECTURE.md", "web/DESIGN.md")
+$CoreDocs = @("README.md", "LICENSE", "CONTRIBUTING.md", "ARCHITECTURE.md", "packages/web/DESIGN.md")
 foreach ($doc in $CoreDocs) {
     if (-not (Test-Path $doc)) {
         Write-Host "[ERROR] Archivo esencial no encontrado: $doc" -ForegroundColor Red

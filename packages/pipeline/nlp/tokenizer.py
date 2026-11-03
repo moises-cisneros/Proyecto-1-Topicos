@@ -23,6 +23,19 @@ _TOKEN_PATTERN: Final[re.Pattern] = re.compile(
     re.IGNORECASE,
 )
 
+# Instancia singleton de SnowballStemmer para evitar instanciaciones repetitivas por token/documento
+_CACHED_SNOWBALL_STEMMER: Optional[Any] = None
+
+def _get_default_stemmer() -> Optional[Any]:
+    global _CACHED_SNOWBALL_STEMMER
+    if _CACHED_SNOWBALL_STEMMER is None:
+        try:
+            from nltk.stem import SnowballStemmer
+            _CACHED_SNOWBALL_STEMMER = SnowballStemmer("spanish")
+        except Exception:
+            _CACHED_SNOWBALL_STEMMER = None
+    return _CACHED_SNOWBALL_STEMMER
+
 
 def tokenize_text(text: str, apply_normalizer: bool = False) -> list[str]:
     """Tokeniza el texto preservando la integridad de tokens sintéticos.
@@ -72,11 +85,7 @@ def stem_tokens(
         return []
 
     if stemmer is None:
-        try:
-            from nltk.stem import SnowballStemmer
-            stemmer = SnowballStemmer("spanish")
-        except Exception:
-            stemmer = None
+        stemmer = _get_default_stemmer()
 
     if stemmer is None:
         # Si el stemmer no está disponible, retornar tokens originales

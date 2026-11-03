@@ -4,6 +4,7 @@ Preserva términos críticos para la detección de phishing y spam tales como ne
 ("no", "sin") y detonantes de urgencia/llamada a la acción ("urgente", "bloqueo", "ya").
 """
 
+from functools import lru_cache
 from typing import Final, Iterable, Optional
 import warnings
 
@@ -108,18 +109,22 @@ _FALLBACK_SPANISH_STOPWORDS: Final[set[str]] = {
 }
 
 
-def load_raw_spanish_stopwords() -> set[str]:
+@lru_cache(maxsize=1)
+def load_raw_spanish_stopwords() -> frozenset[str]:
     """Carga la lista base de stop words en español desde NLTK con respaldo interno."""
     try:
         from nltk.corpus import stopwords
-        return set(stopwords.words("spanish"))
+        return frozenset(stopwords.words("spanish"))
     except Exception as exc:
         warnings.warn(
             f"No se pudo cargar stopwords desde nltk.corpus ({exc}). Usando lista curada de respaldo.",
             UserWarning,
             stacklevel=2,
         )
-        return set(_FALLBACK_SPANISH_STOPWORDS)
+        return frozenset(_FALLBACK_SPANISH_STOPWORDS)
+
+
+_CACHED_DEFAULT_FILTERED_STOPS: Optional[set[str]] = None
 
 
 def get_spanish_stopwords(
@@ -135,7 +140,14 @@ def get_spanish_stopwords(
     Retorna:
         Conjunto de stop words listo para usar en vectorizadores o filtrado manual.
     """
-    raw_stops = load_raw_spanish_stopwords()
+    global _CACHED_DEFAULT_FILTERED_STOPS
+    if whitelist is None and extra_stopwords is None:
+        if _CACHED_DEFAULT_FILTERED_STOPS is None:
+            raw_stops = set(load_raw_spanish_stopwords())
+            _CACHED_DEFAULT_FILTERED_STOPS = raw_stops - DEFAULT_WHITELIST
+        return set(_CACHED_DEFAULT_FILTERED_STOPS)
+
+    raw_stops = set(load_raw_spanish_stopwords())
     active_whitelist = set(whitelist) if whitelist is not None else DEFAULT_WHITELIST
 
     # Excluir de stopwords todas las palabras presentes en la whitelist
