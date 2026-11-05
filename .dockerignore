@@ -18,6 +18,9 @@ htmlcov/
 *.log
 web/node_modules
 web/dist
+node_modules
+packages/web/node_modules
+packages/web/dist
 .agents
 .codegraph
 docs/internal
